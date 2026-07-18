@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TMT OFFLINE EXCEL HUB</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: #0d0e12; 
+            color: #e2e8f0; 
+            padding: 10px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .app-container { width: 100%; max-width: 480px; }
+        .app-header {
+            background: #171923;
+            border-bottom: 1px solid #2d3748;
+            padding: 14px;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 12px;
+            border-radius: 8px;
+        }
+        .app-header h2 { font-size: 1.1rem; font-weight: 700; color: #4fd1c5; }
+        .card-box { 
+            background: #171923; 
+            border: 1px solid #2d3748; 
+            border-radius: 14px; 
+            padding: 16px; 
+            margin-bottom: 12px; 
+        }
+        .card-box h3 { 
+            font-size: 0.8rem; 
+            color: #a0aec0; 
+            text-transform: uppercase; 
+            margin-bottom: 10px; 
+            padding-bottom: 4px;
+            border-bottom: 1px solid #2d3748;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+        .form-group label { font-size: 0.7rem; color: #718096; font-weight: 600; text-transform: uppercase; }
+        .form-group input, .form-group select { 
+            background: #0d0e12; 
+            border: 1px solid #4a5568; 
+            padding: 12px; 
+            color: #fff; 
+            border-radius: 8px; 
+            font-size: 0.95rem; 
+            outline: none;
+            width: 100%;
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .dual-preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; margin-bottom: 5px; }
+        .preview-card { background: #0d0e12; border: 1px solid #2d3748; padding: 10px; border-radius: 8px; text-align: center; }
+        .preview-card .title { font-size: 0.65rem; color: #718096; text-transform: uppercase; font-weight: bold; }
+        .preview-card .value { font-size: 1.1rem; font-weight: bold; margin-top: 2px; }
+        .preview-card.min-side .value { color: #ff9f43; }
+        .preview-card.max-side .value { color: #2ed573; }
+        
+        .btn { 
+            width: 100%; padding: 14px; border: none; border-radius: 10px; 
+            font-size: 0.9rem; cursor: pointer; font-weight: 700; text-transform: uppercase;
+        }
+        .btn-orange { background: #dd6b20; color: white; }
+        .btn-blue { background: #2b6cb0; color: white; }
+        .btn-red { background: #e53e3e; color: white; }
+        .btn-clear { background: transparent; color: #a0aec0; border: 1px dashed #4a5568; padding: 10px; font-size: 0.75rem; margin-top: 8px; width: 100%; text-transform: uppercase; border-radius: 8px; cursor: pointer; }
+
+        .excel-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: #fff; 
+            color: #1a202c; 
+            font-size: 0.75rem; 
+            margin-top: 5px; 
+            border-radius: 8px; 
+            overflow: hidden; 
+        }
+        .excel-table th { background-color: #2b6cb0; color: #fff; padding: 8px; text-align: center; font-weight: bold; border: 1px solid #000; text-transform: uppercase; }
+        .excel-table td { padding: 8px; border: 1px solid #000; text-align: center; font-weight: 500; }
+        .excel-total-row { background-color: #eaedd0; font-weight: bold; }
+        .action-btn-inline { background: #e53e3e; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+        @media print {
+            body { background: #fff; color: #000; padding: 0; }
+            .app-header, .card-box, .btn, .btn-clear, #gross-scale-input-card { display: none !important; }
+            #invoice-print-area { display: block !important; width: 100% !important; margin: 0 !important; padding: 10px !important; }
+            .excel-table th { background-color: #f2f2f2 !important; color: #000 !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="app-header"><h2>⚙️ TMT 100% OFFLINE SMART SYSTEM</h2></div>
+
+    <div class="card-box" style="border-left: 4px solid #ed8936;">
+        <h3>📥 Size Entry & Ton-to-Bundle Calculator</h3>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Select Size</label>
+                <select id="core-size" onchange="liveDualEstimateCalc()">
+                    <option value="8">8 mm</option>
+                    <option value="10">10 mm</option>
+                    <option value="12">12 mm</option>
+                    <option value="16">16 mm</option>
+                    <option value="20">20 mm</option>
+                    <option value="25">25 mm</option>
+                    <option value="32">32 mm</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Target Tons</label>
+                <input type="number" id="core-tons" inputmode="decimal" placeholder="e.g. 10" oninput="liveDualEstimateCalc()">
+            </div>
+        </div>
+        
+        <div class="dual-preview-grid">
+            <div class="preview-card min-side"><div class="title">MIN (Heavy)</div><div id="val-min-side" class="value">0</div></div>
+            <div class="preview-card max-side"><div class="title">MAX (Light)</div><div id="val-max-side" class="value">0</div></div>
+        </div>
+
+        <div class="form-group" style="margin-top:5px;">
+            <label>Enter Exact Bundles to Load</label>
+            <input type="number" id="core-bundles" inputmode="decimal" placeholder="e.g. 109">
+        </div>
+        <button class="btn btn-orange" onclick="addSizeExcelRow()">Add Size to Merge Sheet ➡️</button>
+    </div>
+
+    <div class="card-box" id="gross-scale-input-card" style="border-left: 4px solid #38a169;">
+        <h3>⚖️ Actual Weighbridge Gross Weight (Kanta)</h3>
+        <div class="form-group" style="margin-bottom:5px;">
+            <label>Gross Scale Output Weight (kg)</label>
+            <input type="number" id="gross-scale-wt" placeholder="Enter weight from machine" oninput="refreshExcelGridAndCalculations()">
+        </div>
+    </div>
+
+    <div class="card-box" id="table-card" style="display:none; background:#171923; padding:10px; border:1px solid #4a5568;">
+        <h3 style="color:#4fd1c5; margin-bottom:8px;">📋 Real-Time Active Loading Sheet</h3>
+        <table class="excel-table">
+            <thead>
+                <tr><th>Size</th><th>Bndl</th><th>Rods</th><th>Est. Ton</th><th>Act. Wt</th><th>Act. Avg</th><th>Action</th></tr>
+            </thead>
+            <tbody id="excel-grid-body"></tbody>
+        </table>
+        
+        <div style="margin-top:14px; padding-top:10px; border-top:1px dashed #4a5568;">
+            <div class="form-row">
+                <div class="form-group"><label style="color:#a0aec0;">Lorry Number</label><input type="text" id="wb-truck-name" style="padding:8px;" placeholder="PB 65 X 1234"></div>
+                <div class="form-group"><label style="color:#a0aec0;">Party Name</label><input type="text" id="wb-party-name" style="padding:8px;" placeholder="Om Trading Co"></div>
+            </div>
+            <button class="btn btn-blue" onclick="finalizeManifestAndTriggerPrint()">📥 Save Official PDF Invoice</button>
+            <button class="btn-clear" onclick="resetGlobalManifest()">Clear & Reset Sheet</button>
+        </div>
+    </div>
+
+    <div id="invoice-print-area" style="display:none; color:#000; background:#fff;"></div>
+</div>
+
+<script>
+    let CONFIG = {
+        "8":  {pcs: 18, target_wt: 83.0, min_wt: 82.0, max_wt: 84.0},
+        "10": {pcs: 12, target_wt: 91.9, min_wt: 91.0, max_wt: 92.99},
+        "12": {pcs: 8,  target_wt: 91.9, min_wt: 91.0, max_wt: 92.99},
+        "16": {pcs: 5,  target_wt: 91.9, min_wt: 91.0, max_wt: 92.99},
+        "20": {pcs: 3,  target_wt: 98.8, min_wt: 98.0, max_wt: 99.99},
+        "25": {pcs: 1,  target_wt: 51.8, min_wt: 51.0, max_wt: 52.99},
+        "32": {pcs: 1,  target_wt: 82.8, min_wt: 82.0, max_wt: 84.99}
+    };
+    const SIZE_SEQ = ["8", "10", "12", "16", "20", "25", "32"];
+    let activeEntries = {};
+
+    function roundTo5(value) { return Math.round(value / 5) * 5; }
+
+    function liveDualEstimateCalc() {
+        const size = document.getElementById('core-size').value;
+        const cfg = CONFIG[size];
+        const tons = parseFloat(document.getElementById('core-tons').value) || 0;
+
+        if (tons > 0) {
+            let targetKg = roundTo5(tons * 1000);
+            let minBundles = Math.ceil(targetKg / cfg.max_wt);
+            let maxBundles = Math.floor(targetKg / cfg.min_wt);
+            document.getElementById('val-min-side').innerText = minBundles + " Bndl";
+            document.getElementById('val-max-side').innerText = maxBundles + " Bndl";
+        } else {
+            document.getElementById('val-min-side').innerText = "0";
+            document.getElementById('val-max-side').innerText = "0";
+        }
+    }
+
+    function addSizeExcelRow() {
+        const size = document.getElementById('core-size').value;
+        const bundles = parseFloat(document.getElementById('core-bundles').value) || 0;
+        if (bundles <= 0) { alert("Kripya valid Bundle enter karein!"); return; }
+
+        activeEntries[size] = bundles;
+        refreshExcelGridAndCalculations();
+
+        let currentIdx = SIZE_SEQ.indexOf(size);
+        document.getElementById('core-size').value = (currentIdx < SIZE_SEQ.length - 1) ? SIZE_SEQ[currentIdx + 1] : "8";
+        document.getElementById('core-bundles').value = "";
+        document.getElementById('core-tons').value = "";
+        liveDualEstimateCalc();
+    }
+
+    function deleteExcelRow(size) {
+        delete activeEntries[size];
+        refreshExcelGridAndCalculations();
+    }
+
+    function refreshExcelGridAndCalculations() {
+        let gridBody = document.getElementById('excel-grid-body');
+        gridBody.innerHTML = "";
+        let activeKeys = Object.keys(activeEntries);
+        
+        if (activeKeys.length > 0) {
+            document.getElementById('table-card').style.display = "block";
+        } else {
+            document.getElementById('table-card').style.display = "none";
+            return;
+        }
+
+        let kantaWt = parseFloat(document.getElementById('gross-scale-wt').value) || 0;
+        kantaWt = roundTo5(kantaWt);
+        let totalExpectedWt = 0, grandBndls = 0, grandPcs = 0, grandEstWt = 0;
+
+        activeKeys.forEach(size => { totalExpectedWt += activeEntries[size] * CONFIG[size].target_wt; });
+
+        activeKeys.sort((a,b) => parseInt(a)-parseInt(b)).forEach(size => {
+            let bndl = activeEntries[size];
+            let cfg = CONFIG[size];
+            let safeAvgWt = (parseInt(size) >= 20) ? (cfg.min_wt + 0.3) : cfg.target_wt;
+            let currentEstWt = roundTo5(bndl * safeAvgWt);
+            
+            grandBndls += bndl;
+            grandPcs += Math.round(bndl * cfg.pcs);
+            grandEstWt += currentEstWt;
+
+            let actWtStr = "-", avgBundleWtStr = "-";
+            if (kantaWt > 0 && totalExpectedWt > 0) {
+                let ratio = (bndl * cfg.target_wt) / totalExpectedWt;
+                let finalAllocatedWt = roundTo5(kantaWt * ratio);
+                actWtStr = finalAllocatedWt + " kg";
+                avgBundleWtStr = (finalAllocatedWt / bndl).toFixed(2) + " kg";
+            }
+
+            gridBody.innerHTML += `
+                <tr style="background:#1a1c26; color:#fff;">
+                    <td style="color:#4fd1c5; font-weight:bold;">${size} mm</td>
+                    <td>${bndl}</td>
+                    <td>${Math.round(bndl * cfg.pcs)}</td>
+                    <td style="color:#ed8936; font-weight:bold;">${(currentEstWt / 1000).toFixed(3)} T</td>
+                    <td style="color:#38a169; font-weight:bold;">${actWtStr}</td>
+                    <td>${avgBundleWtStr}</td>
+                    <td><button class="action-btn-inline" onclick="deleteExcelRow('${size}')">❌</button></td>
+                </tr>`;
+        });
+
+        let finalActWtDisplay = kantaWt > 0 ? kantaWt + " kg" : "-";
+        let finalActTonDisplay = kantaWt > 0 ? (kantaWt / 1000).toFixed(3) + " T" : "-";
+
+        gridBody.innerHTML += `
+            <tr class="excel-total-row" style="background-color:#eaedd0; color:#000; font-weight:bold;">
+                <td>TOTAL</td><td>${grandBndls}</td><td>${grandPcs}</td>
+                <td style="color:#dd6b20;">${(grandEstWt / 1000).toFixed(3)} T</td>
+                <td style="color:#2b6cb0;">${finalActWtDisplay}</td><td>${finalActTonDisplay}</td>
+                <td>🔥 LIVE</td>
+            </tr>`;
+    }
+
+    function finalizeManifestAndTriggerPrint() {
+        const truck = document.getElementById('wb-truck-name').value.trim();
+        if (!truck) { alert("Lorry Number enter kijiye!"); return; }
+        let kantaWt = parseFloat(document.getElementById('gross-scale-wt').value) || 0;
+        kantaWt = roundTo5(kantaWt);
+        if (kantaWt <= 0) { alert("Pehle Scale Weight enter karein!"); return; }
+
+        const party = document.getElementById('wb-party-name').value.trim() || "N/A";
+        let printArea = document.getElementById('invoice-print-area');
+        let rowsHtml = "";
+        let totalExpectedWt = 0; let grandBndls = 0; let grandPcs = 0;
+        Object.keys(activeEntries).forEach(size => { totalExpectedWt += activeEntries[size] * CONFIG[size].target_wt; });
+
+        Object.keys(activeEntries).sort((a,b) => parseInt(a)-parseInt(b)).forEach(size => {
+            let bndl = activeEntries[size];
+            let ratio = (bndl * CONFIG[size].target_wt) / totalExpectedWt;
+            let actWt = roundTo5(kantaWt * ratio);
+            let avg = (actWt / bndl).toFixed(2);
+            let pcs = Math.round(bndl * CONFIG[size].pcs);
+            grandBndls += bndl; grandPcs += pcs;
+            rowsHtml += `<tr><td>${size} mm</td><td>${bndl}</td><td>${pcs}</td><td><b>${actWt} kg</b></td><td>${avg} kg</td><td>PASS</td></tr>`;
+        });
+
+        printArea.innerHTML = `
+            <div style="font-family:sans-serif; padding:10px; color:#000;">
+                <h2 style="text-align:center; margin-bottom:2px;">TMT LOADING INVOICE</h2>
+                <hr style="border:1px solid #000; margin-bottom:10px;">
+                <p><strong>VEHICLE REG NO:</strong> ${truck.toUpperCase()} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>PARTY NAME:</strong> ${party}</p>
+                <table class="excel-table" style="width:100%; margin-top:15px; border-collapse:collapse;">
+                    <thead><tr style="background:#f2f2f2; color:#000;"><th>SIZE</th><th>BUNDLES</th><th>PCS</th><th>GROSS WT</th><th>AVG/BNDL</th><th>STATUS</th></tr></thead>
+                    <tbody>${rowsHtml}<tr class="excel-total-row"><td>TOTAL</td><td>${grandBndls}</td><td>${grandPcs}</td><td>${kantaWt} kg</td><td>-</td><td>${(kantaWt/1000).toFixed(3)} Tons</td></tr></tbody>
+                </table>
+            </div>`;
+        window.print();
+    }
+
+    function resetGlobalManifest() {
+        activeEntries = {};
+        document.getElementById('wb-truck-name').value = "";
+        document.getElementById('wb-party-name').value = "";
+        document.getElementById('gross-scale-wt').value = "";
+        refreshExcelGridAndCalculations();
+    }
+</script>
+</body>
+</html>
