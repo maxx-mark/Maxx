@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>20 Pages Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .nav-btn {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .nav-btn:hover {
+            background-color: #34495e;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 600px) {
+            .button-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>मुख्य मेनू पेज</h1>
+
+    <div class="button-grid">
+        <a href="page1.html" class="nav-btn">Click 1</a>
+        <a href="page2.html" class="nav-btn">Click 2</a>
+        <a href="page3.html" class="nav-btn">Click 3</a>
+        <a href="page4.html" class="nav-btn">Click 4</a>
+        
+        <a href="page5.html" class="nav-btn">Click 5</a>
+        <a href="page6.html" class="nav-btn">Click 6</a>
+        <a href="page7.html" class="nav-btn">Click 7</a>
+        <a href="page8.html" class="nav-btn">Click 8</a>
+        
+        <a href="page9.html" class="nav-btn">Click 9</a>
+        <a href="page10.html" class="nav-btn">Click 10</a>
+        <a href="page11.html" class="nav-btn">Click 11</a>
+        <a href="page12.html" class="nav-btn">Click 12</a>
+        
+        <a href="page13.html" class="nav-btn">Click 13</a>
+        <a href="page14.html" class="nav-btn">Click 14</a>
+        <a href="page15.html" class="nav-btn">Click 15</a>
+        <a href="page16.html" class="nav-btn">Click 16</a>
+        
+        <a href="page17.html" class="nav-btn">Click 17</a>
+        <a href="page18.html" class="nav-btn">Click 18</a>
+        <a href="page19.html" class="nav-btn">Click 19</a>
+        <a href="page20.html" class="nav-btn">Click 20</a>
+    </div>
+
+</body>
+</html>
+
