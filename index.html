@@ -1,89 +1,313 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>20 Pages Menu</title>
+    <title>G-Studio Pro Dashboard</title>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
-            margin: 0;
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        :root {
+            --bg-color: #0f172a;
+            --sidebar-bg: #1e293b;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
         }
 
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-        }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
 
-        .button-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            max-width: 800px;
-            width: 100%;
-        }
+        /* --- SIDEBAR --- */
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); padding: 20px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.3s; z-index: 100; border-right: 1px solid rgba(255,255,255,0.05); }
+        .logo { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 40px; }
+        .logo i { color: var(--accent); font-size: 26px; filter: drop-shadow(0 0 8px var(--accent-glow)); }
+        
+        .nav-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .nav-links li a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; text-decoration: none; color: var(--text-muted); font-weight: 500; border-radius: 10px; transition: 0.3s; }
+        .nav-links li a:hover, .nav-links li a.active { background: var(--accent); color: #fff; box-shadow: 0 4px 15px var(--accent-glow); }
+        
+        .user-profile { display: flex; align-items: center; gap: 12px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-top: 20px; }
+        .user-profile img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
+        .user-info h4 { font-size: 14px; margin-bottom: 2px; }
+        .user-info p { font-size: 12px; color: var(--text-muted); }
 
-        .nav-btn {
-            background-color: #2c3e50;
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            text-decoration: none;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 8px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; padding: 30px; display: flex; flex-direction: column; gap: 30px; overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 20px; }
+        .header-title h1 { font-size: 28px; font-weight: 700; letter-spacing: 1px; display: flex; align-items: center; }
+        .menu-btn { display: none; font-size: 24px; color: white; cursor: pointer; margin-right: 15px; }
 
-        .nav-btn:hover {
-            background-color: #34495e;
-            transform: translateY(-2px);
-        }
+        .admin-controls { display: flex; gap: 10px; }
+        .btn { padding: 8px 15px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: 600; display: flex; align-items: center; gap: 8px; border: none; font-size: 14px; }
+        .admin-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+        .admin-btn:hover { background: var(--accent); border-color: var(--accent); }
+        .save-btn { background: var(--success); color: white; display: none; }
+        .save-btn:hover { background: #0e9f6e; }
 
-        @media (max-width: 600px) {
-            .button-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        /* --- TOOLS GRID --- */
+        .section-title { font-size: 20px; margin-bottom: 10px; font-weight: 600; display: flex; align-items: center; }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding-bottom: 50px; }
+        
+        .tool-card { background: linear-gradient(145deg, var(--sidebar-bg), rgba(30,41,59,0.4)); border-radius: 16px; padding: 20px; text-decoration: none; color: white; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        .tool-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+        
+        /* Icon Editing Styles */
+        .icon-wrapper { position: relative; display: inline-block; margin-bottom: 12px; width: fit-content; }
+        .tool-icon { font-size: 30px; transition: 0.3s; }
+        .icon-edit-btn { position: absolute; top: -8px; right: -15px; background: var(--accent); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 10px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10; border: 2px solid var(--sidebar-bg); }
+        .icon-edit-btn:hover { background: white; color: var(--accent); }
+        
+        .tool-card h2 { font-size: 16px; margin-bottom: 6px; font-weight: 600; line-height: 1.3; }
+        .tool-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; flex-grow: 1; }
+        
+        .tool-arrow { align-self: flex-end; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; justify-content: center; align-items: center; transition: 0.3s; font-size: 12px; }
+        
+        /* Edit Mode Styles */
+        .editable { padding: 2px 4px; border-radius: 4px; border: 1px solid transparent; transition: 0.2s; outline: none; }
+        .editing { border: 1px dashed var(--accent); background: rgba(255,255,255,0.05); cursor: text; }
+
+        /* Login Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .login-box { background: var(--sidebar-bg); padding: 30px; border-radius: 12px; width: 320px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .login-box h3 { margin-bottom: 20px; font-weight: 600; }
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; outline: none; }
+        .login-box button { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; margin-bottom: 10px; transition: 0.3s; }
+        
+        /* Mobile View */
+        @media (max-width: 900px) {
+            .sidebar { position: fixed; left: -280px; height: 100vh; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .sidebar.active { left: 0; }
+            .menu-btn { display: inline-block; }
+            .main-content { padding: 20px 15px; }
+            .header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .header-title h1 { font-size: 22px; }
+            .admin-controls { width: 100%; }
+            .admin-controls .btn { flex: 1; justify-content: center; }
+            
+            /* Mobile Grid */
+            .tools-grid { grid-template-columns: 1fr; gap: 15px; }
+            .tool-card { padding: 15px; flex-direction: row; align-items: center; gap: 15px; }
+            .icon-wrapper { margin-bottom: 0; width: 40px; text-align: center; }
+            .tool-icon { font-size: 26px; }
+            .icon-edit-btn { top: -5px; right: -5px; } /* Adjust edit button for mobile */
+            
+            .tool-card-content { flex: 1; }
+            .tool-card h2 { font-size: 15px; margin-bottom: 4px; }
+            .tool-card p { font-size: 11px; margin-bottom: 0; }
+            .tool-arrow { align-self: center; margin-top: 0; }
         }
     </style>
 </head>
 <body>
 
-    <h1>मुख्य मेनू पेज</h1>
+    <aside class="sidebar" id="sidebar">
+        <div>
+            <div class="logo"><i class="fa-solid fa-code"></i><span>G-Studio</span></div>
+            <ul class="nav-links">
+                <li><a href="#" class="active" onclick="toggleMenu()"><i class="fa-solid fa-border-all"></i> Dashboard</a></li>
+                <li><a href="page1.html"><i class="fa-solid fa-file-shield"></i> PDF Locker</a></li>
+                <li><a href="page2.html"><i class="fa-solid fa-briefcase"></i> CSC Toolkit</a></li>
+                <li><a href="page3.html"><i class="fa-solid fa-weight-scale"></i> TMT System</a></li>
+            </ul>
+        </div>
+        <div class="user-profile">
+            <img src="https://ui-avatars.com/api/?name=Gurdit+Singh&background=3b82f6&color=fff" alt="Profile">
+            <div class="user-info"><h4>Maalik</h4><p>System Admin</p></div>
+        </div>
+    </aside>
 
-    <div class="button-grid">
-        <a href="page1.html" class="nav-btn">Click 1</a>
-        <a href="page2.html" class="nav-btn">Click 2</a>
-        <a href="page3.html" class="nav-btn">Click 3</a>
-        <a href="page4.html" class="nav-btn">Click 4</a>
-        
-        <a href="page5.html" class="nav-btn">Click 5</a>
-        <a href="page6.html" class="nav-btn">Click 6</a>
-        <a href="page7.html" class="nav-btn">Click 7</a>
-        <a href="page8.html" class="nav-btn">Click 8</a>
-        
-        <a href="page9.html" class="nav-btn">Click 9</a>
-        <a href="page10.html" class="nav-btn">Click 10</a>
-        <a href="page11.html" class="nav-btn">Click 11</a>
-        <a href="page12.html" class="nav-btn">Click 12</a>
-        
-        <a href="page13.html" class="nav-btn">Click 13</a>
-        <a href="page14.html" class="nav-btn">Click 14</a>
-        <a href="page15.html" class="nav-btn">Click 15</a>
-        <a href="page16.html" class="nav-btn">Click 16</a>
-        
-        <a href="page17.html" class="nav-btn">Click 17</a>
-        <a href="page18.html" class="nav-btn">Click 18</a>
-        <a href="page19.html" class="nav-btn">Click 19</a>
-        <a href="page20.html" class="nav-btn">Click 20</a>
+    <main class="main-content">
+        <header class="header">
+            <div class="header-title">
+                <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
+                <h1>Dashboard Manager</h1>
+            </div>
+            <div class="admin-controls">
+                <button id="adminBtn" class="btn admin-btn" onclick="openLogin()"><i class="fa-solid fa-lock"></i> Edit Mode</button>
+                <button id="saveBtn" class="btn save-btn" onclick="saveChanges()"><i class="fa-solid fa-check"></i> Save Changes</button>
+            </div>
+        </header>
+
+        <div>
+            <div class="section-title"><i class="fa-solid fa-layer-group" style="color:var(--accent); margin-right:10px;"></i> All Tools (20 Modules)</div>
+            <div class="tools-grid" id="toolsContainer"></div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="login-box">
+            <h3>Admin Access</h3>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="checkLogin()">Login</button>
+            <div class="close-modal" onclick="closeLogin()">Cancel</div>
+        </div>
     </div>
 
+    <script>
+        const defaultTools = [
+            { id: 1, title: "PDF Locker Military Wala", desc: "Advanced security engine to lock, unlock, and manage PDFs.", link: "page1.html", icon: "fa-file-shield", color: "var(--danger)" },
+            { id: 2, title: "Media & CSC Toolkit Pro", desc: "Complete professional toolkit for CSC and ID Vault.", link: "page2.html", icon: "fa-briefcase", color: "var(--success)" },
+            { id: 3, title: "TMT 100% OFFLINE SMART SYSTEM", desc: "Smart offline calculator for TMT weight calculations.", link: "page3.html", icon: "fa-weight-scale", color: "var(--warning)" },
+            { id: 4, title: "Advanced QR Generator", desc: "Create QR codes for Links, WiFi, and UPI Payments.", link: "page4.html", icon: "fa-qrcode", color: "var(--purple)" },
+            { id: 5, title: "Image Background Remover", desc: "AI based tool to remove backgrounds from any image.", link: "page5.html", icon: "fa-image", color: "var(--accent)" },
+            { id: 6, title: "Document Scanner Pro", desc: "Scan physical documents and convert them to clear PDFs.", link: "page6.html", icon: "fa-print", color: "var(--pink)" },
+            { id: 7, title: "File Compressor", desc: "Reduce the size of large images and PDF files easily.", link: "page7.html", icon: "fa-compress", color: "var(--success)" },
+            { id: 8, title: "Smart Age Calculator", desc: "Calculate exact age in years, months, and days.", link: "page8.html", icon: "fa-calculator", color: "var(--warning)" },
+            { id: 9, title: "Text to Speech Engine", desc: "Convert any written text into human-like audio voices.", link: "page9.html", icon: "fa-microphone", color: "var(--purple)" },
+            { id: 10, title: "Typing Speed Tester", desc: "Check your Hindi and English typing speed (WPM).", link: "page10.html", icon: "fa-keyboard", color: "var(--accent)" },
+            { id: 11, title: "Secure Password Generator", desc: "Generate unbreakable military-grade passwords.", link: "page11.html", icon: "fa-key", color: "var(--danger)" },
+            { id: 12, title: "Universal Unit Converter", desc: "Convert length, weight, area, and temperature.", link: "page12.html", icon: "fa-ruler", color: "var(--success)" },
+            { id: 13, title: "EMI & Loan Calculator", desc: "Calculate monthly EMI and total interest for loans.", link: "page13.html", icon: "fa-money-bill-wave", color: "var(--warning)" },
+            { id: 14, title: "Image Format Converter", desc: "Convert JPG to PNG, WEBP, or PDF instantly.", link: "page14.html", icon: "fa-images", color: "var(--pink)" },
+            { id: 15, title: "Audio Extractor", desc: "Extract MP3 audio from any video file offline.", link: "page15.html", icon: "fa-music", color: "var(--purple)" },
+            { id: 16, title: "Quick Notes Maker", desc: "Write and save daily notes safely on your device.", link: "page16.html", icon: "fa-note-sticky", color: "var(--accent)" },
+            { id: 17, title: "Advanced To-Do List", desc: "Manage your daily tasks and project deadlines.", link: "page17.html", icon: "fa-list-check", color: "var(--success)" },
+            { id: 18, title: "Weather Tracker", desc: "Check live weather updates for Baddi and Barotiwala.", link: "page18.html", icon: "fa-cloud-sun", color: "var(--warning)" },
+            { id: 19, title: "Expense Manager", desc: "Track your daily income and business expenses.", link: "page19.html", icon: "fa-chart-pie", color: "var(--danger)" },
+            { id: 20, title: "GitHub Sync Tool", desc: "Manage HTML files and local storage backups.", link: "page20.html", icon: "fa-laptop-code", color: "var(--purple)" }
+        ];
+
+        let isAdmin = false;
+
+        window.onload = () => {
+            let savedTools = JSON.parse(localStorage.getItem('gStudioTools'));
+            if (!savedTools || savedTools.length < 20) {
+                savedTools = defaultTools;
+                localStorage.setItem('gStudioTools', JSON.stringify(savedTools));
+            }
+            renderCards(savedTools);
+        };
+
+        function renderCards(toolsArray) {
+            const container = document.getElementById('toolsContainer');
+            container.innerHTML = '';
+
+            toolsArray.forEach(tool => {
+                const card = document.createElement('a');
+                // Disable link if in Admin mode to prevent accidental clicks
+                card.href = isAdmin ? "javascript:void(0)" : tool.link; 
+                card.className = 'tool-card';
+                
+                // Icon HTML with Edit Button for Admin Mode
+                let iconHTML = `
+                    <div class="icon-wrapper">
+                        <i class="fa-solid ${tool.icon} tool-icon icon-editable" id="icon-${tool.id}" data-id="${tool.id}" style="color: ${tool.color};"></i>
+                        ${isAdmin ? `<div class="icon-edit-btn" onclick="editIcon(${tool.id}, '${tool.icon}')" title="Change Icon"><i class="fa-solid fa-pen"></i></div>` : ''}
+                    </div>
+                `;
+
+                card.innerHTML = `
+                    ${iconHTML}
+                    <div class="tool-card-content">
+                        <h2 class="editable" data-id="${tool.id}" data-field="title" ${isAdmin ? 'contenteditable="true" class="editable editing"' : ''}>${tool.title}</h2>
+                        <p class="editable" data-id="${tool.id}" data-field="desc" ${isAdmin ? 'contenteditable="true" class="editable editing"' : ''}>${tool.desc}</p>
+                    </div>
+                    <div class="tool-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- ICON EDIT FUNCTION ---
+        function editIcon(id, currentIcon) {
+            // Prompt the user for a new icon class
+            let newIcon = prompt("नया आइकॉन सेट करें।\n(उदाहरण: fa-car, fa-user, fa-heart, fa-camera, fa-music):", currentIcon);
+            
+            if (newIcon && newIcon.trim() !== "") {
+                newIcon = newIcon.trim();
+                
+                // Remove 'fa-solid' if user accidentally typed it, we just need the 'fa-xyz' part
+                if(newIcon.includes('fa-solid')) {
+                    newIcon = newIcon.replace('fa-solid', '').trim();
+                }
+
+                // Instantly update on screen (Preview)
+                const iconElement = document.getElementById(`icon-${id}`);
+                iconElement.className = `fa-solid ${newIcon} tool-icon icon-editable`;
+                
+                // Save it to a temporary attribute so 'saveChanges()' can read it
+                iconElement.setAttribute('data-new-icon', newIcon);
+            }
+        }
+
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function openLogin() { document.getElementById('loginModal').style.display = 'flex'; }
+        function closeLogin() { document.getElementById('loginModal').style.display = 'none'; document.getElementById('password').value = ''; }
+
+        function checkLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            
+            if (user === 'admin' && pass === 'maalik') {
+                isAdmin = true;
+                closeLogin();
+                
+                document.getElementById('adminBtn').style.display = 'none';
+                document.getElementById('saveBtn').style.display = 'flex';
+                
+                let savedTools = JSON.parse(localStorage.getItem('gStudioTools'));
+                renderCards(savedTools);
+                alert("Welcome Maalik! Edit Mode is ON. You can now edit Icons and Texts.");
+            } else {
+                alert("Incorrect Username or Password!");
+            }
+        }
+
+        function saveChanges() {
+            let savedTools = JSON.parse(localStorage.getItem('gStudioTools'));
+            
+            // 1. Save Text Changes
+            document.querySelectorAll('.editable:not(.icon-editable)').forEach(el => {
+                const id = parseInt(el.getAttribute('data-id'));
+                const field = el.getAttribute('data-field');
+                
+                const toolIndex = savedTools.findIndex(t => t.id === id);
+                if (toolIndex > -1) {
+                    savedTools[toolIndex][field] = el.innerText.trim();
+                }
+            });
+
+            // 2. Save Icon Changes
+            document.querySelectorAll('.icon-editable').forEach(el => {
+                const id = parseInt(el.getAttribute('data-id'));
+                const newIcon = el.getAttribute('data-new-icon'); // Check if it was changed
+                
+                if (newIcon) {
+                    const toolIndex = savedTools.findIndex(t => t.id === id);
+                    if (toolIndex > -1) {
+                        savedTools[toolIndex].icon = newIcon;
+                    }
+                }
+            });
+
+            // Save to Local Storage
+            localStorage.setItem('gStudioTools', JSON.stringify(savedTools));
+            
+            // Turn off Admin Mode
+            isAdmin = false;
+            document.getElementById('adminBtn').style.display = 'flex';
+            document.getElementById('saveBtn').style.display = 'none';
+            
+            renderCards(savedTools);
+            alert("Changes Saved Successfully!");
+        }
+    </script>
 </body>
 </html>
-
