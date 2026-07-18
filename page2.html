@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Media & CSC Resizer Pro</title>
+    <!-- External Libraries for PDF Processing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text: #1F2937;
+            --accent: #059669;
+            --csc-color: #D97706;
+            --csc-hover: #B45309;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 900px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+        h2 { text-align: center; margin-top: 0; color: var(--text); }
+        
+        .tabs { display: flex; flex-wrap: wrap; border-bottom: 2px solid #E5E7EB; margin-bottom: 25px; gap: 5px; }
+        .tab { flex: 1; min-width: 120px; text-align: center; padding: 12px; cursor: pointer; font-weight: 600; color: #6B7280; transition: 0.3s; border-radius: 6px 6px 0 0; font-size: 15px; }
+        .tab.active { color: var(--primary); border-bottom: 3px solid var(--primary); background: #EEF2F6; }
+        .content { display: none; }
+        .content.active { display: block; }
+        
+        .controls {
+            display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;
+            margin-bottom: 20px; background: #F9FAFB; padding: 15px;
+            border-radius: 8px; border: 1px solid #E5E7EB;
+        }
+        .input-group { display: flex; flex-direction: column; flex: 1; min-width: 140px; }
+        .full-width { flex: 1 1 100%; }
+        label { font-size: 14px; font-weight: 600; margin-bottom: 5px; color: #374151; }
+        input[type="number"], input[type="text"], input[type="password"], select, input[type="file"], input[type="range"] {
+            padding: 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 15px; background: #fff; width: 100%; box-sizing: border-box;
+        }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; height: 42px; font-size: 14px; font-weight: 500; }
+        
+        .size-badge-container {
+            display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; background: #EEF2F6;
+            padding: 12px; border-radius: 6px; font-size: 14px; border-left: 4px solid var(--primary);
+        }
+        .size-badge { font-weight: bold; color: var(--primary); }
+        .size-badge.resized { color: var(--accent); }
+        
+        button {
+            background-color: var(--primary); color: white; border: none; padding: 12px 20px;
+            border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;
+            transition: 0.3s; width: 100%; margin-top: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        button:hover { background-color: var(--primary-hover); }
+        button:disabled { background-color: #9CA3AF; cursor: not-allowed; }
+        
+        .btn-csc { background-color: var(--csc-color); }
+        .btn-csc:hover { background-color: var(--csc-hover); }
+
+        .preview-area {
+            width: 100%; min-height: 250px; max-height: 500px; border: 2px dashed #D1D5DB; border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto;
+            background: #F9FAFB; margin-top: 15px; padding: 15px; box-sizing: border-box; position: relative;
+        }
+        img, video { max-width: 100%; max-height: 350px; object-fit: contain; }
+        .info-note { font-size: 13px; color: #4B5563; margin-top: 10px; text-align: center; }
+        
+        .pdf-page-container { margin-bottom: 20px; text-align: center; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #E5E7EB; width: 100%; }
+        .pdf-page-container canvas { max-width: 100%; height: auto; border: 1px solid #D1D5DB; }
+
+        .loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); display: none; flex-direction: column;
+            align-items: center; justify-content: center; font-weight: bold; color: var(--primary);
+            z-index: 10; text-align: center; padding: 20px; box-sizing: border-box;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary);
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 600px) {
+            body { padding: 0; background: var(--card-bg); }
+            .container { padding: 15px; border-radius: 0; box-shadow: none; }
+            .tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: none; gap: 8px; }
+            .tab { font-size: 13px; padding: 10px 5px; border: 1px solid #E5E7EB; border-radius: 6px; }
+            .tab.active { border-bottom: none; border-color: var(--primary); background: #EEF2F6; }
+            .input-group { min-width: 100%; flex: 1 1 100%; }
+            .size-badge-container { flex-direction: column; gap: 8px; }
+            .controls { padding: 10px; }
+            h2 { font-size: 22px; margin-bottom: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Media & CSC Toolkit Pro</h2>
+    
+    <!-- Tab Navigation -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('photo')">🖼️ Photo Resizer</div>
+        <div class="tab" onclick="switchTab('video')">🎥 Video Resizer</div>
+        <div class="tab" onclick="switchTab('pdf')">📄 PDF Tools</div>
+        <div class="tab" onclick="switchTab('csc')" style="color: var(--csc-color);">💼 CSC Special</div>
+    </div>
+
+    <!-- ================= PHOTO SECTION ================= -->
+    <div id="photo-section" class="content active">
+        <div class="controls">
+            <div class="input-group full-width">
+                <label>Upload Photo:</label>
+                <input type="file" id="imageInput" accept="image/*">
+            </div>
+            <div class="input-group">
+                <label>Unit:</label>
+                <select id="unitSelect">
+                    <option value="px">Pixels (px)</option>
+                    <option value="cm">Centimeters (cm)</option>
+                    <option value="mm">Millimeters (mm)</option>
+                    <option value="in">Inches (in)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>DPI:</label>
+                <input type="number" id="imgDpi" value="300" min="1" step="1">
+            </div>
+            <div class="input-group"><label>Width:</label><input type="number" id="imgWidth" step="0.01"></div>
+            <div class="input-group"><label>Height:</label><input type="number" id="imgHeight" step="0.01"></div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="keepImgAspect" checked>
+                <label for="keepImgAspect" style="margin:0;">Keep Aspect Ratio</label>
+            </div>
+            <div class="input-group full-width" style="margin-top: 10px;">
+                <label>Image Quality (Size Reducer): <span id="qualityVal">90%</span></label>
+                <input type="range" id="imageQuality" min="0.1" max="1.0" step="0.05" value="0.9">
+            </div>
+        </div>
+
+        <div class="size-badge-container" id="sizeInfoContainer" style="display: none;">
+            <div>📁 Original Size: <span id="origSize" class="size-badge">0 KB</span></div>
+            <div>⚡ Estimated New Size: <span id="resizedSize" class="size-badge resized">0 KB</span></div>
+        </div>
+        
+        <button onclick="downloadResizedImage()">Resize & Download Photo</button>
+
+        <div class="preview-area">
+            <img id="imagePreview" style="display: none;" />
+            <span id="imgPlaceholder">Image preview will appear here</span>
+        </div>
+    </div>
+
+    <!-- ================= VIDEO SECTION ================= -->
+    <div id="video-section" class="content">
+        <div class="controls">
+            <div class="input-group full-width">
+                <label>Upload Video:</label>
+                <input type="file" id="videoInput" accept="video/*">
+            </div>
+            
+            <div class="input-group">
+                <label>Width (px):</label>
+                <input type="number" id="vidWidth">
+            </div>
+            
+            <div class="input-group">
+                <label>Height (px):</label>
+                <input type="number" id="vidHeight">
+            </div>
+
+            <div class="input-group">
+                <label>Frame Rate (FPS):</label>
+                <select id="vidFps">
+                    <option value="60">60 FPS (Super Smooth)</option>
+                    <option value="30" selected>30 FPS (Standard)</option>
+                    <option value="24">24 FPS (Cinematic)</option>
+                    <option value="15">15 FPS (Smaller Size)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Format:</label>
+                <select id="vidFormat">
+                    <option value="mp4">MP4 (.mp4)</option>
+                    <option value="webm" selected>WebM (.webm)</option>
+                    <option value="mkv">MKV (.mkv)</option>
+                </select>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="keepVidAspect" checked>
+                <label for="keepVidAspect" style="margin:0;">Keep Aspect Ratio</label>
+            </div>
+
+            <div class="input-group full-width" style="margin-top: 10px;">
+                <label>Video Compression & Quality:</label>
+                <select id="vidQuality">
+                    <option value="5000000">Smart Compress (Same Quality, Less Size)</option>
+                    <option value="2500000" selected>Medium Quality (Good for Phone sharing)</option>
+                    <option value="1000000">Low Quality (Smallest File Size)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="size-badge-container" id="vidSizeInfoContainer" style="display: none;">
+            <div>📁 Original Video Size: <span id="vidOrigSize" class="size-badge">0 MB</span></div>
+            <div>⏱️ Duration: <span id="vidDurationText" class="size-badge">0s</span></div>
+            <div style="width: 100%;">⚡ Estimated Output Size: <span id="vidResizedSize" class="size-badge resized">0 MB</span></div>
+        </div>
+
+        <button id="vidBtn" onclick="exportRealVideo()">🎬 Compress & Download Video</button>
+        <p class="info-note">Tip: Phone par crash se bachne ke liye resolution thoda kam rakhein (e.g. 720p).</p>
+
+        <div class="preview-area">
+            <video id="videoPreview" controls style="display: none;"></video>
+            <span id="vidPlaceholder">Video preview will appear here</span>
+            
+            <div class="loading-overlay" id="vidLoading">
+                <div class="spinner"></div>
+                <div>Processing Video... Please wait.</div>
+                <div id="vidProgress" style="font-size:12px; margin-top:5px;">Optimizing resources to prevent crash...</div>
+                <div id="vidProgressText" style="font-size:32px; font-weight:bold; color: var(--accent); margin-top:15px;">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PDF TOOLS SECTION ================= -->
+    <div id="pdf-section" class="content">
+        <div class="controls">
+            <div class="input-group full-width">
+                <label>Upload PDF Document:</label>
+                <input type="file" id="pdfInput" accept="application/pdf">
+            </div>
+            <div class="input-group">
+                <label>PDF Password (If Locked):</label>
+                <input type="password" id="pdfPassword" placeholder="e.g. Aadhaar PIN">
+            </div>
+            <div class="input-group">
+                <label>Action To Perform:</label>
+                <select id="pdfAction">
+                    <option value="convertToPhoto">🖼️ Convert PDF to Photos</option>
+                    <option value="unlockPdf">🔓 Remove Password Permanently</option>
+                </select>
+            </div>
+        </div>
+
+        <button id="pdfProcessBtn" onclick="processPDF()" class="btn-csc">🚀 Execute PDF Action</button>
+        
+        <div class="preview-area" id="pdfPreviewArea">
+            <span id="pdfPlaceholder">PDF page previews/downloads will list here</span>
+            <div class="loading-overlay" id="pdfLoading" style="display: none;">
+                <div class="spinner"></div>
+                <div id="pdfStatusText">Processing PDF... Hold tight.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CSC SPECIAL SECTION ================= -->
+    <div id="csc-section" class="content">
+        <div class="controls">
+            <div class="input-group full-width">
+                <label>Upload Customer Photo:</label>
+                <input type="file" id="cscPhotoInput" accept="image/*">
+            </div>
+            <div class="input-group">
+                <label>Passport Size Presets:</label>
+                <select id="cscSizePreset">
+                    <option value="standard">Standard (3.5 x 4.5 cm)</option>
+                    <option value="stamp">Stamp Size (2.0 x 2.5 cm)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Number of Photos on Sheet:</label>
+                <select id="cscCopies">
+                    <option value="6">6 Copies</option>
+                    <option value="12" selected>12 Copies</option>
+                    <option value="24">24 Copies (Full Row-Grid)</option>
+                </select>
+            </div>
+        </div>
+
+        <button onclick="generatePassportSheet()" class="btn-csc">🖨️ Create Printable A4 Sheet</button>
+
+        <div class="preview-area" id="cscPreviewArea">
+            <canvas id="cscCanvas" style="display: none; max-width: 100%; border: 1px solid #9CA3AF; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);"></canvas>
+            <span id="cscPlaceholder">A4 Passport sheet preview will load here</span>
+        </div>
+        <button id="cscDownloadBtn" onclick="downloadCscSheet()" style="display:none; background-color: #059669; color: white;">📥 Download Ready-To-Print Sheet</button>
+    </div>
+
+</div>
+
+<script>
+    // Initialize PDF.js Worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        
+        if (tab === 'photo') {
+            document.querySelectorAll('.tab')[0].classList.add('active');
+            document.getElementById('photo-section').classList.add('active');
+        } else if (tab === 'video') {
+            document.querySelectorAll('.tab')[1].classList.add('active');
+            document.getElementById('video-section').classList.add('active');
+        } else if (tab === 'pdf') {
+            document.querySelectorAll('.tab')[2].classList.add('active');
+            document.getElementById('pdf-section').classList.add('active');
+        } else {
+            document.querySelectorAll('.tab')[3].classList.add('active');
+            document.getElementById('csc-section').classList.add('active');
+        }
+    }
+
+    function formatBytes(bytes) {
+        if (bytes === 0 || isNaN(bytes)) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    /* ================= PHOTO LOGIC ================= */
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const imgPlaceholder = document.getElementById('imgPlaceholder');
+    const unitSelect = document.getElementById('unitSelect');
+    const imgDpiInput = document.getElementById('imgDpi');
+    const imgWidthInput = document.getElementById('imgWidth');
+    const imgHeightInput = document.getElementById('imgHeight');
+    const keepImgAspect = document.getElementById('keepImgAspect');
+    const imageQuality = document.getElementById('imageQuality');
+    const qualityVal = document.getElementById('qualityVal');
+    const sizeInfoContainer = document.getElementById('sizeInfoContainer');
+    const origSizeText = document.getElementById('origSize');
+    const resizedSizeText = document.getElementById('resizedSize');
+
+    let originalImg = new Image();
+    let imgOrigW = 0, imgOrigH = 0, imgRatio = 1, currentUnit = 'px';
+    const MM_IN_INCH = 25.4;
+    const CM_IN_INCH = 2.54;
+
+    function getCurrentDPI() {
+        return parseFloat(imgDpiInput.value) || 96;
+    }
+
+    function pxToUnit(px, unit) {
+        const dpi = getCurrentDPI();
+        if (unit === 'in') return (px / dpi).toFixed(2);
+        if (unit === 'cm') return (px / dpi * CM_IN_INCH).toFixed(2);
+        if (unit === 'mm') return (px / dpi * MM_IN_INCH).toFixed(2);
+        return Math.round(px);
+    }
+    
+    function unitToPx(val, unit) {
+        const dpi = getCurrentDPI();
+        if (unit === 'in') return val * dpi;
+        if (unit === 'cm') return (val / CM_IN_INCH) * dpi;
+        if (unit === 'mm') return (val / MM_IN_INCH) * dpi;
+        return val;
+    }
+
+    imageInput.addEventListener('change', function(e) {
+        if (e.target.files[0]) {
+            origSizeText.textContent = formatBytes(e.target.files[0].size);
+            sizeInfoContainer.style.display = 'flex';
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImg.src = event.target.result;
+                imagePreview.src = event.target.result;
+                imagePreview.style.display = 'block';
+                imgPlaceholder.style.display = 'none';
+                originalImg.onload = function() {
+                    imgOrigW = originalImg.width; imgOrigH = originalImg.height; imgRatio = imgOrigW / imgOrigH;
+                    imgWidthInput.value = pxToUnit(imgOrigW, unitSelect.value);
+                    imgHeightInput.value = pxToUnit(imgOrigH, unitSelect.value);
+                    calcResizedSize();
+                }
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+
+    function calcResizedSize() {
+        if (!originalImg.src) return;
+        let w = unitToPx(parseFloat(imgWidthInput.value), unitSelect.value);
+        let h = unitToPx(parseFloat(imgHeightInput.value), unitSelect.value);
+        if (!w || !h) return;
+        const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(originalImg, 0, 0, w, h);
+        canvas.toBlob(b => b && (resizedSizeText.textContent = formatBytes(b.size)), 'image/jpeg', parseFloat(imageQuality.value));
+    }
+
+    unitSelect.addEventListener('change', function() {
+        let w = unitToPx(parseFloat(imgWidthInput.value), currentUnit);
+        let h = unitToPx(parseFloat(imgHeightInput.value), currentUnit);
+        currentUnit = this.value;
+        imgWidthInput.value = pxToUnit(w, currentUnit); imgHeightInput.value = pxToUnit(h, currentUnit);
+        calcResizedSize();
+    });
+
+    imgDpiInput.addEventListener('input', function() {
+        if (!originalImg.src) return;
+        calcResizedSize();
+    });
+
+    imgWidthInput.addEventListener('input', function() {
+        if (keepImgAspect.checked && imgOrigW) {
+            imgHeightInput.value = pxToUnit(unitToPx(this.value, unitSelect.value) / imgRatio, unitSelect.value);
+        }
+        calcResizedSize();
+    });
+    imgHeightInput.addEventListener('input', function() {
+        if (keepImgAspect.checked && imgOrigH) {
+            imgWidthInput.value = pxToUnit(unitToPx(this.value, unitSelect.value) * imgRatio, unitSelect.value);
+        }
+        calcResizedSize();
+    });
+    imageQuality.addEventListener('input', function() {
+        qualityVal.textContent = Math.round(this.value * 100) + '%';
+        calcResizedSize();
+    });
+
+    function downloadResizedImage() {
+        if (!originalImg.src) return alert("Upload image first!");
+        let w = unitToPx(parseFloat(imgWidthInput.value), unitSelect.value);
+        let h = unitToPx(parseFloat(imgHeightInput.value), unitSelect.value);
+        const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(originalImg, 0, 0, w, h);
+        const link = document.createElement('a'); link.download = 'resized-image.jpg';
+        link.href = canvas.toDataURL('image/jpeg', parseFloat(imageQuality.value)); link.click();
+    }
+
+    /* ================= VIDEO LOGIC ================= */
+    const videoInput = document.getElementById('videoInput');
+    const videoPreview = document.getElementById('videoPreview');
+    const vidPlaceholder = document.getElementById('vidPlaceholder');
+    const vidWidthInput = document.getElementById('vidWidth');
+    const vidHeightInput = document.getElementById('vidHeight');
+    const keepVidAspect = document.getElementById('keepVidAspect');
+    const vidQuality = document.getElementById('vidQuality');
+    const vidFpsInput = document.getElementById('vidFps');
+    const vidFormatInput = document.getElementById('vidFormat');
+    const vidLoading = document.getElementById('vidLoading');
+    const vidBtn = document.getElementById('vidBtn');
+    
+    const vidSizeInfoContainer = document.getElementById('vidSizeInfoContainer');
+    const vidOrigSize = document.getElementById('vidOrigSize');
+    const vidDurationText = document.getElementById('vidDurationText');
+    const vidResizedSize = document.getElementById('vidResizedSize');
+
+    let vidOrigW = 0, vidOrigH = 0, vidRatio = 1, videoDuration = 0;
+    let videoSourceURL = "";
+
+    videoInput.addEventListener('change', function(e) {
+        if (e.target.files[0]) {
+            const file = e.target.files[0];
+            vidOrigSize.textContent = formatBytes(file.size);
+            vidSizeInfoContainer.style.display = 'flex';
+
+            videoSourceURL = URL.createObjectURL(file);
+            videoPreview.src = videoSourceURL;
+            videoPreview.style.display = 'block';
+            vidPlaceholder.style.display = 'none';
+
+            videoPreview.onloadedmetadata = function() {
+                vidOrigW = this.videoWidth;
+                vidOrigH = this.videoHeight;
+                vidRatio = vidOrigW / vidOrigH;
+                vidWidthInput.value = vidOrigW;
+                vidHeightInput.value = vidOrigH;
+                
+                videoDuration = this.duration;
+                vidDurationText.textContent = videoDuration.toFixed(1) + " seconds";
+                
+                calculateEstimatedVideoSize();
+            };
+        }
+    });
+
+    function calculateEstimatedVideoSize() {
+        if (!videoDuration) return;
+        let bps = parseInt(vidQuality.value);
+        let estimatedBytes = (bps * videoDuration) / 8;
+        let audioBytes = (128000 * videoDuration) / 8; 
+        let totalBytes = estimatedBytes + audioBytes;
+        vidResizedSize.textContent = formatBytes(totalBytes);
+    }
+
+    vidQuality.addEventListener('change', calculateEstimatedVideoSize);
+
+    vidWidthInput.addEventListener('input', function() {
+        if (keepVidAspect.checked && vidOrigW) vidHeightInput.value = Math.round(this.value / vidRatio);
+    });
+    vidHeightInput.addEventListener('input', function() {
+        if (keepVidAspect.checked && vidOrigH) vidWidthInput.value = Math.round(this.value * vidRatio);
+    });
+
+    async function exportRealVideo() {
+        if (!videoSourceURL) return alert("Please upload a video first.");
+        videoPreview.pause();
+        
+        let newWidth = parseInt(vidWidthInput.value);
+        let newHeight = parseInt(vidHeightInput.value);
+        let bitrate = parseInt(vidQuality.value);
+        let fpsValue = parseInt(vidFpsInput.value) || 30; 
+        let selectedFormat = vidFormatInput.value;
+        let mimeType = selectedFormat === 'mp4' ? 'video/mp4' : (selectedFormat === 'mkv' ? 'video/x-matroska' : 'video/webm; codecs=vp9');
+
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = 'video/webm';
+            selectedFormat = 'webm';
+        }
+
+        vidBtn.disabled = true;
+        vidLoading.style.display = 'flex';
+        
+        const hiddenVideo = document.createElement('video');
+        hiddenVideo.src = videoSourceURL;
+        hiddenVideo.crossOrigin = "anonymous";
+
+        const canvas = document.createElement('canvas'); canvas.width = newWidth; canvas.height = newHeight;
+        const ctx = canvas.getContext('2d');
+        const stream = canvas.captureStream(fpsValue);
+
+        hiddenVideo.onloadeddata = function() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    const audioCtx = new AudioContext();
+                    const source = audioCtx.createMediaElementSource(hiddenVideo);
+                    const destination = audioCtx.createMediaStreamDestination();
+                    source.connect(destination);
+                    if(destination.stream.getAudioTracks().length > 0) stream.addTrack(destination.stream.getAudioTracks()[0]);
+                }
+            } catch(e) { console.error(e); }
+
+            const recorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: bitrate });
+            const chunks = [];
+            recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+            
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: chunks[0].type });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url;
+                a.download = `compressed_video_${newWidth}x${newHeight}.${selectedFormat}`;
+                a.click();
+                vidBtn.disabled = false; vidLoading.style.display = 'none';
+            };
+
+            recorder.start(1000); hiddenVideo.play();
+            hiddenVideo.addEventListener('timeupdate', () => {
+                if (videoDuration > 0) {
+                    document.getElementById('vidProgressText').innerText = Math.min(100, Math.round((hiddenVideo.currentTime / videoDuration) * 100)) + "%";
+                }
+            });
+
+            let lastDrawTime = 0; const frameInterval = 1000 / fpsValue;
+            function drawFrame(now) {
+                if (hiddenVideo.paused || hiddenVideo.ended) return;
+                requestAnimationFrame(drawFrame);
+                if (now - lastDrawTime >= frameInterval) { lastDrawTime = now; ctx.drawImage(hiddenVideo, 0, 0, newWidth, newHeight); }
+            }
+            hiddenVideo.addEventListener('play', () => requestAnimationFrame(drawFrame));
+            hiddenVideo.addEventListener('ended', () => recorder.stop());
+        };
+    }
+
+    /* ================= PDF LOGIC ================= */
+    async function processPDF() {
+        const pdfInput = document.getElementById('pdfInput');
+        const password = document.getElementById('pdfPassword').value;
+        const action = document.getElementById('pdfAction').value;
+        const previewArea = document.getElementById('pdfPreviewArea');
+        const loadingOverlay = document.getElementById('pdfLoading');
+        const statusText = document.getElementById('pdfStatusText');
+
+        if (!pdfInput.files[0]) return alert("Please upload a PDF file first!");
+        
+        const file = pdfInput.files[0];
+        loadingOverlay.style.display = 'flex';
+        previewArea.querySelectorAll('.pdf-page-container').forEach(el => el.remove());
+        document.getElementById('pdfPlaceholder').style.display = 'none';
+
+        try {
+            const fileArrayBuffer = await file.arrayBuffer();
+
+            if (action === 'unlockPdf') {
+                statusText.innerText = "Decrypting & Removing Password...";
+                const pdfDoc = await PDFLib.PDFDocument.load(fileArrayBuffer, { password: password });
+                const unlockedPdfBytes = await pdfDoc.save();
+                
+                const blob = new Blob([unlockedPdfBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `Unlocked_${file.name}`;
+                link.click();
+                alert("PDF Password Removed Successfully!");
+            } 
+            else if (action === 'convertToPhoto') {
+                statusText.innerText = "Converting PDF Pages into Images...";
+                
+                const loadingTask = pdfjsLib.getDocument({ data: fileArrayBuffer, password: password });
+                const pdf = await loadingTask.promise;
+                
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: 2.0 });
+                    
+                    const container = document.createElement('div');
+                    container.className = 'pdf-page-container';
+                    
+                    const label = document.createElement('div');
+                    label.innerText = `Page ${pageNum}`;
+                    label.style.fontWeight = 'bold';
+                    label.style.marginBottom = '5px';
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    const ctx = canvas.getContext('2d');
+                    
+                    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                    
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.innerText = `📥 Download Page ${pageNum} as JPG`;
+                    downloadBtn.style.width = 'auto';
+                    downloadBtn.style.padding = '6px 12px';
+                    downloadBtn.style.fontSize = '13px';
+                    downloadBtn.style.margin = '8px auto 0 auto';
+                    downloadBtn.style.display = 'block';
+                    downloadBtn.style.backgroundColor = '#059669';
+                    
+                    downloadBtn.onclick = function() {
+                        const imgLink = document.createElement('a');
+                        imgLink.download = `${file.name.replace('.pdf','')}_Page_${pageNum}.jpg`;
+                        imgLink.href = canvas.toDataURL('image/jpeg', 0.95);
+                        imgLink.click();
+                    };
+                    
+                    container.appendChild(label);
+                    container.appendChild(canvas);
+                    container.appendChild(downloadBtn);
+                    previewArea.appendChild(container);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error: Please verify your password or file format.");
+            document.getElementById('pdfPlaceholder').style.display = 'block';
+        } finally {
+            loadingOverlay.style.display = 'none';
+        }
+    }
+
+    /* ================= CSC SPECIAL STUDIO LOGIC ================= */
+    let cscSourceImg = new Image();
+
+    document.getElementById('cscPhotoInput').addEventListener('change', function(e) {
+        if (e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                cscSourceImg.src = event.target.result;
+                cscSourceImg.onload = function() {
+                    document.getElementById('cscPlaceholder').innerText = "Photo loaded! Ready to tile on A4 sheet.";
+                }
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+
+    function generatePassportSheet() {
+        if (!cscSourceImg.src) return alert("Please upload a customer photo first!");
+        
+        const preset = document.getElementById('cscSizePreset').value;
+        const copies = parseInt(document.getElementById('cscCopies').value);
+        const canvas = document.getElementById('cscCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = 2480;
+        canvas.height = 3508;
+        
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        let photoW, photoH;
+        if (preset === 'standard') {
+            photoW = Math.round((3.5 / 2.54) * 300);
+            photoH = Math.round((4.5 / 2.54) * 300);
+        } else {
+            photoW = Math.round((2.0 / 2.54) * 300);
+            photoH = Math.round((2.5 / 2.54) * 300);
+        }
+        
+        const startX = 150; 
+        const startY = 150;
+        const gapX = 45; 
+        const gapY = 60;
+        const maxPhotosPerRow = 5;
+
+        for (let i = 0; i < copies; i++) {
+            let row = Math.floor(i / maxPhotosPerRow);
+            let col = i % maxPhotosPerRow;
+            
+            let x = startX + col * (photoW + gapX);
+            let y = startY + row * (photoH + gapY);
+            
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(x, y, photoW, photoH);
+            ctx.clip();
+            
+            let srcRatio = cscSourceImg.width / cscSourceImg.height;
+            let targetRatio = photoW / photoH;
+            let renderW, renderH, offsetX, offsetY;
+            
+            if (srcRatio > targetRatio) {
+                renderH = photoH;
+                renderW = photoH * srcRatio;
+                offsetX = x - (renderW - photoW) / 2;
+                offsetY = y;
+            } else {
+                renderW = photoW;
+                renderH = photoW / srcRatio;
+                offsetX = x;
+                offsetY = y - (renderH - photoH) / 2;
+            }
+            
+            ctx.drawImage(cscSourceImg, offsetX, offsetY, renderW, renderH);
+            ctx.restore();
+            
+            ctx.strokeStyle = '#4B5563';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x, y, photoW, photoH);
+        }
+        
+        canvas.style.display = 'block';
+        document.getElementById('cscPlaceholder').style.display = 'none';
+        document.getElementById('cscDownloadBtn').style.display = 'block';
+    }
+
+    function downloadCscSheet() {
+        const canvas = document.getElementById('cscCanvas');
+        const link = document.createElement('a');
+        link.download = `CSC_Passport_Sheet_${Date.now()}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 0.98);
+        link.click();
+    }
+</script>
+
+</body>
+</html>
