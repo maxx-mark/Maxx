@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Ye line website ko phone ki screen ke hisaab se fit karti hai -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mobile Friendly Video Player</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Base Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px; /* Phone ke liye padding kam ki hai */
+        }
+
+        /* Container Styling */
+        .player-container {
+            width: 100%;
+            max-width: 500px; /* Thoda compact banaya hai */
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            background: -webkit-linear-gradient(#fff, #a1c4fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Video Player Styling */
+        video {
+            width: 100%;
+            border-radius: 12px;
+            background: #000;
+            outline: none;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            margin-bottom: 15px;
+            /* Phone me height control karne ke liye */
+            max-height: 300px; 
+            object-fit: contain;
+        }
+
+        /* Sections */
+        .controls-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        h3 {
+            font-size: 13px;
+            font-weight: 500;
+            color: #d1d5db;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Input Group (Desktop ke liye Row, Phone ke liye Column neeche media query me) */
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        input[type="text"]::placeholder {
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+        /* File Upload Styling */
+        input[type="file"] {
+            display: none;
+        }
+        .file-upload-label {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px dashed rgba(255, 255, 255, 0.4);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            white-space: nowrap;
+        }
+
+        .btn-download {
+            display: none;
+            width: 100%;
+            margin-bottom: 20px;
+            text-decoration: none;
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        /* ======== MOBILE RESPONSIVE CSS ======== */
+        @media screen and (max-width: 480px) {
+            .player-container {
+                padding: 15px;
+                border-radius: 15px;
+            }
+            
+            h2 {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+            
+            /* Phone me Link Box aur Button upar-neeche aayenge */
+            .input-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .btn-primary {
+                width: 100%; /* Button full width ho jayega */
+                padding: 14px; /* Touch karne ke liye thoda bada */
+            }
+            
+            input[type="text"], .file-upload-label {
+                padding: 14px; /* Typing/Tapping me aasan rahega */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="player-container">
+    <h2>🎥 StreamFlix Player</h2>
+
+    <!-- HTML5 Video Player -->
+    <video id="myVideo" controls playsinline>
+        Aapka browser video support nahi karta.
+    </video>
+
+    <!-- Download Button -->
+    <a id="downloadBtn" class="btn btn-download" href="#" download>
+        ⬇ Download Video
+    </a>
+
+    <!-- Link Section -->
+    <div class="controls-section">
+        <h3>🔗 Paste Online Video Link</h3>
+        <div class="input-group">
+            <input type="text" id="videoLink" placeholder="e.g., https://site.com/video.mp4">
+            <button class="btn btn-primary" onclick="playFromLink()">Play Now</button>
+        </div>
+    </div>
+
+    <!-- Local File Section -->
+    <div class="controls-section">
+        <h3>📁 Play Local Video</h3>
+        <label for="localVideo" class="file-upload-label" id="fileLabel">
+            + Choose Video from Phone
+        </label>
+        <input type="file" id="localVideo" accept="video/*" onchange="playLocalFile(event)">
+    </div>
+</div>
+
+<script>
+    const videoPlayer = document.getElementById('myVideo');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const fileLabel = document.getElementById('fileLabel');
+
+    function playFromLink() {
+        const link = document.getElementById('videoLink').value;
+        if(link) {
+            videoPlayer.src = link;
+            videoPlayer.play();
+            
+            downloadBtn.href = link;
+            downloadBtn.download = "downloaded_video.mp4";
+            downloadBtn.style.display = "block";
+        } else {
+            alert("Bhai, pehle video ka link toh daal do! 😅");
+        }
+    }
+
+    function playLocalFile(event) {
+        const file = event.target.files[0];
+        if(file) {
+            const fileURL = URL.createObjectURL(file);
+            videoPlayer.src = fileURL;
+            videoPlayer.play();
+            
+            downloadBtn.href = fileURL;
+            downloadBtn.download = file.name;
+            downloadBtn.style.display = "block";
+            
+            // Lamba naam ho toh phone me tut na jaye isliye cut kar denge
+            let fileName = file.name;
+            if(fileName.length > 25) {
+                fileName = fileName.substring(0, 22) + "...";
+            }
+            fileLabel.innerText = "✅ " + fileName;
+        }
+    }
+</script>
+
+</body>
+</html>
