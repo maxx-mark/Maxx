@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utility Studio Pro - Direct File Downloader</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #0F172A; 
+            color: #F8FAFC; 
+            max-width: 900px; 
+            margin: 40px auto; 
+            padding: 20px; 
+        }
+        .header { text-align: center; margin-bottom: 20px; }
+        h1 { color: #6366F1; margin-bottom: 5px;}
+        p { color: #94A3B8; }
+        
+        #statusBox {
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            background: #10B981; 
+            color: white; 
+            font-weight: bold; 
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .file-box { 
+            background: #1E293B; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+        }
+        .file-path {
+            font-weight: bold;
+            color: #06B6D4;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .file-path span {
+            background: #334155;
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: #F8FAFC;
+            margin-left: 10px;
+            font-family: monospace;
+        }
+        textarea { 
+            width: 100%; 
+            height: 200px; 
+            padding: 12px; 
+            background: #0F172A; 
+            border: 1px solid #334155; 
+            border-radius: 6px; 
+            color: #10B981;
+            box-sizing: border-box; 
+            font-size: 13px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        textarea:focus { outline: none; border-color: #6366F1; }
+        .download-btn { 
+            background-color: #10B981; 
+            color: white; 
+            border: none; 
+            padding: 15px 30px; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            font-size: 18px; 
+            font-weight: bold;
+            transition: background 0.3s ease;
+            width: 100%;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+        .download-btn:hover { background-color: #059669; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🚀 Utility Studio Pro - Direct Downloader</h1>
+        <p>Saari files yahan hain. Aap ek-ek karke ya saari ek sath download kar sakte hain.</p>
+    </div>
+
+    <div id="statusBox">✅ Ready. Click below to download files.</div>
+
+    <button class="download-btn" onclick="downloadAllFiles()">📥 Download All Files as Text/Config Pack</button>
+
+    <div id="boxes-container">
+
+        <!-- File 1 -->
+        <div class="file-box" data-path="metadata.json">
+            <div class="file-path">📁 File Path: <span>metadata.json</span></div>
+            <textarea>{
+  "name": "Utility Studio Pro",
+  "description": "All-in-One Digital Studio with PDF Tools, Passport Photo & Media Resizer, TMT Steel Hub, and Digital ID Generator.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}</textarea>
+        </div>
+
+        <!-- File 2 -->
+        <div class="file-box" data-path=".env.example">
+            <div class="file-path">📁 File Path: <span>.env.example</span></div>
+            <textarea># GEMINI_API_KEY: Required for Gemini AI API calls. 
+# This is a placeholder key. 
+# AI Studio automatically injects this at runtime from user secrets. 
+# Users configure this via the Secrets panel in the AI Studio UI. 
+GEMINI_API_KEY=MY_GEMINI_API_KEY</textarea>
+        </div>
+
+        <!-- File 3 -->
+        <div class="file-box" data-path=".gitignore">
+            <div class="file-path">📁 File Path: <span>.gitignore</span></div>
+            <textarea>*.iml
+.gradle
+.kotlin
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+.env
+debug.keystore</textarea>
+        </div>
+
+        <!-- File 4 -->
+        <div class="file-box" data-path="app/build.gradle.kts">
+            <div class="file-path">📁 File Path: <span>app/build.gradle.kts</span></div>
+            <textarea>import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.roborazzi)
+    alias(libs.plugins.secrets)
+    alias(libs.plugins.google.services)
+}
+
+android {
+    namespace = "com.example"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "com.aistudio.utilitystudio.xkp9a"
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
+            storeFile = file(keystorePath)
+            storePassword = System.getenv("STORE_PASSWORD")
+            keyAlias = "upload"
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
+        create("debugConfig") {
+            storeFile = file("${rootDir}/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
+    buildTypes {
+        release {
+            isCrunchPngs = false
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
+        }
+        debug { 
+            signingConfig = signingConfigs.getByName("debugConfig") 
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    testOptions { 
+        unitTests { 
+            isIncludeAndroidResources = true 
+        } 
+    }
+}
+
+secrets {
+    propertiesFileName = ".env"
+    defaultPropertiesFileName = ".env.example"
+}
+
+googleServices { 
+    missingGoogleServicesStrategy = MissingGoogleServicesStrategy.WARN 
+}
+
+dependencies {
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.coil.compose)
+    implementation(libs.converter.moshi)
+    implementation(libs.firebase.ai)
+    implementation(libs.firebase.appcheck.recaptcha)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.logging.interceptor)
+    implementation(libs.moshi.kotlin)
+    implementation(libs.okhttp)
+    implementation(libs.retrofit)
+    
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.androidx.core)
+    testImplementation(libs.androidx.junit)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.roborazzi.junit.rule)
+    
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.runner)
+    
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    
+    ksp(libs.androidx.room.compiler)
+    ksp(libs.moshi.kotlin.codegen)
+}</textarea>
+        </div>
+
+        <!-- File 5 -->
+        <div class="file-box" data-path="app/src/androidTest/java/com/example/ExampleInstrumentedTest.kt">
+            <div class="file-path">📁 File Path: <span>app/src/androidTest/java/com/example/ExampleInstrumentedTest.kt</span></div>
+            <textarea>package com.example
+
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.Assert.*
+import org.junit.Test
+import org.junit.runner.RunWith
+
+@RunWith(AndroidJUnit4::class)
+class ExampleInstrumentedTest {
+    @Test
+    fun useAppContext() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals("com.example", appContext.packageName)
+    }
+}</textarea>
+        </div>
+
+        <!-- File 6 -->
+        <div class="file-box" data-path="app/src/main/AndroidManifest.xml">
+            <div class="file-path">📁 File Path: <span>app/src/main/AndroidManifest.xml</span></div>
+            <textarea>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"&gt;
+    &lt;uses-permission android:name="android.permission.INTERNET" /&gt;
+    &lt;uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" /&gt;
+    &lt;uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /&gt;
+    &lt;uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" /&gt;
+    &lt;application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyApplication"&gt;
+        &lt;activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.MyApplication"&gt;
+            &lt;intent-filter&gt;
+                &lt;action android:name="android.intent.action.MAIN" /&gt;
+                &lt;category android:name="android.intent.category.LAUNCHER" /&gt;
+            &lt;/intent-filter&gt;
+        &lt;/activity&gt;
+        &lt;provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true"&gt;
+            &lt;meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" /&gt;
+        &lt;/provider&gt;
+    &lt;/application&gt;
+&lt;/manifest&gt;</textarea>
+        </div>
+
+        <!-- File 7 -->
+        <div class="file-box" data-path="app/src/main/java/com/example/MainActivity.kt">
+            <div class="file-path">📁 File Path: <span>app/src/main/java/com/example/MainActivity.kt</span></div>
+            <textarea>package com.example
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.CropOriginal
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.ui.screens.HomeScreen
+import com.example.ui.screens.IdCardScreen
+import com.example.ui.screens.MediaCscScreen
+import com.example.ui.screens.PdfStudioScreen
+import com.example.ui.screens.TmtHubScreen
+import com.example.ui.theme.MyApplicationTheme
+import com.example.viewmodel.IdCardViewModel
+import com.example.viewmodel.MediaCscViewModel
+import com.example.viewmodel.PdfStudioViewModel
+import com.example.viewmodel.TmtHubViewModel
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            MyApplicationTheme {
+                UtilityStudioApp()
+            }
+        }
+    }
+}
+
+sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
+    object Home : Screen("home", "Home", Icons.Default.Home)
+    object PdfStudio : Screen("pdf_studio", "PDF Studio", Icons.Default.PictureAsPdf)
+    object MediaCsc : Screen("media_csc", "Media & CSC", Icons.Default.CropOriginal)
+    object TmtHub : Screen("tmt_hub", "TMT Steel", Icons.Default.Calculate)
+    object IdCard : Screen("id_card", "Digital ID", Icons.Default.Badge)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UtilityStudioApp() {
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Home.route
+    
+    val pdfViewModel: PdfStudioViewModel = viewModel()
+    val mediaCscViewModel: MediaCscViewModel = viewModel()
+    val tmtHubViewModel: TmtHubViewModel = viewModel()
+    val idCardViewModel: IdCardViewModel = viewModel()
+    
+    val navItems = listOf(
+        Screen.Home,
+        Screen.PdfStudio,
+        Screen.MediaCsc,
+        Screen.TmtHub,
+        Screen.IdCard
+    )
+    
+    val currentScreen = navItems.find { it.route == currentRoute } ?: Screen.Home
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(text = currentScreen.title, fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    if (currentRoute != Screen.Home.route) {
+                        IconButton(onClick = { navController.navigateUp() }) {
+                            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        },
+        bottomBar = {
+            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                navItems.forEach { screen ->
+                    val selected = currentRoute == screen.route
+                    NavigationBarItem(
+                        icon = { Icon(screen.icon, contentDescription = screen.title) },
+                        label = { Text(screen.title) },
+                        selected = selected,
+                        onClick = {
+                            if (currentRoute != screen.route) {
+                                navController.navigate(screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
+        NavHost(navController = navController, startDestination = Screen.Home.route, modifier = Modifier.padding(innerPadding)) {
+            composable(Screen.Home.route) {
+                HomeScreen(
+                    onNavigateToPdf = { navController.navigate(Screen.PdfStudio.route) },
+                    onNavigateToMedia = { navController.navigate(Screen.MediaCsc.route) },
+                    onNavigateToTmt = { navController.navigate(Screen.TmtHub.route) },
+                    onNavigateToIdCard = { navController.navigate(Screen.IdCard.route) }
+                )
+            }
+            composable(Screen.PdfStudio.route) { PdfStudioScreen(viewModel = pdfViewModel) }
+            composable(Screen.MediaCsc.route) { MediaCscScreen(viewModel = mediaCscViewModel) }
+            composable(Screen.TmtHub.route) { TmtHubScreen(viewModel = tmtHubViewModel) }
+            composable(Screen.IdCard.route) { IdCardScreen(viewModel = idCardViewModel) }
+        }
+    }
+}</textarea>
+        </div>
+
+        <!-- File 8 -->
+        <div class="file-box" data-path="app/src/main/java/com/example/ui/theme/Color.kt">
+            <div class="file-path">📁 File Path: <span>app/src/main/java/com/example/ui/theme/Color.kt</span></div>
+            <textarea>package com.example.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+val IndigoPrimary = Color(0xFF6366F1)
+val IndigoSecondary = Color(0xFF818CF8)
+val DarkNavyBackground = Color(0xFF0F172A)
+val DarkSurfaceCard = Color(0xFF1E293B)
+val DarkSurfaceVariant = Color(0xFF334155)
+val EmeraldSuccess = Color(0xFF10B981)
+val AmberWarning = Color(0xFFF59E0B)
+val CrimsonError = Color(0xFFEF4444)
+val CyanAccent = Color(0xFF06B6D4)
+val LightBackground = Color(0xFFF8FAFC)
+val LightSurface = Color(0xFFFFFFFF)
+val LightSurfaceVariant = Color(0xFFE2E8F0)
+val TextPrimaryDark = Color(0xFFF8FAFC)
+val TextSecondaryDark = Color(0xFF94A3B8)
+val TextPrimaryLight = Color(0xFF0F172A)
+val TextSecondaryLight = Color(0xFF64748B)</textarea>
+        </div>
+
+        <!-- File 9 -->
+        <div class="file-box" data-path="app/src/main/java/com/example/ui/theme/Theme.kt">
+            <div class="file-path">📁 File Path: <span>app/src/main/java/com/example/ui/theme/Theme.kt</span></div>
+            <textarea>package com.example.ui.theme
+
+import android.os.Build
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.
