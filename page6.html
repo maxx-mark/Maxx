@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Multi-Tool OS</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body { background: var(--bg-main); color: var(--text-main); min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        header { text-align: center; margin-bottom: 30px; width: 100%; max-width: 600px; }
+        header h1 { font-size: 28px; font-weight: 700; color: #1e1b4b; background: linear-gradient(to right, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        header p { color: var(--text-muted); font-size: 14px; margin-top: 6px; }
+
+        /* Dashboard App Grid */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: 100%; max-width: 600px; }
+        @media(min-width: 480px) { .dashboard-grid { grid-template-columns: repeat(3, 1fr); } }
+        
+        .app-card { background: var(--card-bg); padding: 20px; border-radius: 16px; text-align: center; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05); transition: all 0.2s ease; border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+        .app-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: var(--primary); }
+        .app-card .icon { font-size: 32px; }
+        .app-card .title { font-size: 13px; font-weight: 600; color: #334155; }
+
+        /* Tool Screen Container */
+        .tool-screen { background: var(--card-bg); width: 100%; max-width: 600px; padding: 24px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); display: none; border: 1px solid #edf2f7; }
+        .tool-screen.active { display: block; animation: fadeIn 0.3s ease; }
+
+        .back-btn { background: #f1f5f9; color: #334155; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 13px; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; }
+        .back-btn:hover { background: #e2e8f0; }
+
+        h3 { font-size: 22px; font-weight: 700; margin-bottom: 20px; color: #1e293b; }
+        
+        /* Modern Inputs & Buttons */
+        .form-group { margin-bottom: 16px; }
+        label { font-size: 13px; font-weight: 600; color: #475569; display: block; margin-bottom: 6px; }
+        input, select, textarea { padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; width: 100%; outline: none; background: #f8fafc; transition: 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
+        
+        .btn { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 15px; width: 100%; transition: 0.2s; }
+        .btn:hover { background: var(--primary-hover); }
+        
+        .result-box { margin-top: 16px; padding: 16px; background: #f1f5f9; border-radius: 12px; font-weight: 700; text-align: center; color: #1e293b; font-size: 16px; }
+
+        /* Tool specific tweaks */
+        .hw-output { min-height: 180px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; font-family: 'Caveat', cursive; font-size: 26px; line-height: 1.6; white-space: pre-wrap; background-image: linear-gradient(#e2e8f0 1px, transparent 1px); background-size: 100% 2em; }
+        .ttt-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+        .ttt-cell { background: #f8fafc; border: 2px solid #e2e8f0; height: 85px; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; cursor: pointer; border-radius: 14px; transition: 0.2s; }
+        .ttt-cell:hover { background: #f1f5f9; }
+        
+        /* Snake Game Mobile Controls */
+        canvas { background: #0f172a; display: block; margin: 0 auto; border-radius: 12px; max-width: 100%; height: auto; }
+        .dpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 160px; margin: 20px auto 0 auto; }
+        .dbtn { background: #e2e8f0; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; user-select: none; }
+        .dbtn:active { background: #cbd5e1; }
+
+        /* Pixel Art Grid */
+        .pixel-grid { display: grid; grid-template-columns: repeat(16, 1fr); gap: 1px; background: #cbd5e1; padding: 1px; border-radius: 8px; margin-top: 12px; overflow: hidden; }
+        .pixel { background: white; aspect-ratio: 1; cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <header id="main-header">
+        <h1>Smart Toolbox OS</h1>
+        <p>Premium & Super Responsive Toolkit</p>
+    </header>
+
+    <!-- DASHBOARD HOME SCREEN -->
+    <div class="dashboard-grid" id="dashboard">
+        <div class="app-card" onclick="openTool('handwriting')"><span class="icon">✍️</span><span class="title">Handwriting</span></div>
+        <div class="app-card" onclick="openTool('meme')"><span class="icon">🖼️</span><span class="title">Meme Maker</span></div>
+        <div class="app-card" onclick="openTool('qr')"><span class="icon">📲</span><span class="title">QR Generator</span></div>
+        <div class="app-card" onclick="openTool('pixel')"><span class="icon">🎨</span><span class="title">Pixel Art</span></div>
+        <div class="app-card" onclick="openTool('emi')"><span class="icon">💰</span><span class="title">EMI Calc</span></div>
+        <div class="app-card" onclick="openTool('splitter')"><span class="icon">💸</span><span class="title">Bill Split</span></div>
+        <div class="app-card" onclick="openTool('pwd')"><span class="icon">🔑</span><span class="title">Password Gen</span></div>
+        <div class="app-card" onclick="openTool('ttt')"><span class="icon">🕹️</span><span class="title">Tic-Tac-Toe</span></div>
+        <div class="app-card" onclick="openTool('snake')"><span class="icon">🐍</span><span class="title">Snake Game</span></div>
+        <div class="app-card" onclick="openTool('typing')"><span class="icon">⚡</span><span class="title">Typing Test</span></div>
+    </div>
+
+    <!-- 1. HANDWRITING CONVERTER -->
+    <div id="handwriting" class="tool-screen">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <h3>Handwriting Converter</h3>
+        <div class="form-group">
+            <label>Yahan Type Karein:</label>
+            <textarea id="hw-input" oninput="document.getElementById('hw-out').innerText=this.value" placeholder="Likhna shuru karein..."></textarea>
+        </div>
+        <div class="hw-output" id="hw-out">Apna text likhein...</div>
+    </div>
+
+    <!-- 2. MEME GENERATOR -->
+    <div id="meme" class="tool-screen">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <h3>Meme Generator</h3>
+        <div class="form-group"><label>Photo Chunien:</label><input type="file" id="meme-file" accept="image/*"></div>
+        <div class="form-group"><label>Top Text:</label><input type="text" id="meme-top" placeholder="Upar ka text"></div>
+        <div class="form-group"><label>Bottom Text:</label><input type="text" id="meme-bottom" placeholder="Niche ka text"></div>
+        <button class="btn" onclick="generateMeme()">Meme Render Karein</button>
+        <div style="text-align:center; margin-top:15px;"><canvas id="meme-canvas" width="350" height="350"></canvas></div>
+    </div>
+
+    <!-- 3. QR CODE GENERATOR -->
+    <div id="qr" class="tool-screen">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <h3>QR Code Generator</h3>
+        <div class="form-group"><label>Link ya Text Daalein:</label><input type="text" id="qr-text" placeholder="https://google.com"></div>
+        <button class="btn" onclick="genQR()">QR Code Banayein</button>
+        <div style="text-align: center; margin-top: 20px;"><img id="qr-img" src="" style="display:none; max-width: 160px; border-radius:8px;"></div>
+    </div>
+
+    <!-- 4. PIXEL ART MAKER -->
+    <div id="pixel" class="tool-screen">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <h3>Pixel Art Maker</h3>
+        <div class="form-group"><label>Color Box:</label><input type="color" id="pixel-color" value="#6366f1" style="height:45px; padding:5px;"></div>
+        <div class="pixel-grid" id="pixel-grid"></div>
+        <button class="btn" style="margin-top:15px; background:#ef4444;" onclick="clearPixelGrid()">Clear Canvas</button>
+    </div>
+
+    <!-- 5. EMI CALCULATOR -->
+    <div id="emi" class="tool-screen">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <h3>EMI Calculator</h3>
+        <div class="form-group"><label>Loan Amount (₹):</label><input type="number" id="emi-amt" value="100000"></div>
+        <div class="form-group"><label>Interest Rate (%):</label><input type="number" id="emi-rate" value="10" step="0.1"></div>
+        <div class="form-group"><label>Duration (Months):</label><input type="number" id="emi-months" value="12"></div>
+        <button class="btn" onclick="calcEMI()">Calculate</button>
+        <div class="result-box" id="emi-res">Monthly EMI: ₹0</div>
+    </div>
+
+    <!-- 6. BILL SPLITTER -->
+    <div id="splitter" class="tool-screen">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <h3>Smart Bill Splitter</h3>
+        <div class="form-group"><label>Total Amount (₹):</label><input type="number" id="bill-total" placeholder="0"></div>
+        <div class="form-group"><label>Total People:</label><input type="number" id="bill-people" placeholder="1"></div>
+        <button class="btn" onclick="splitBill()">Split Now</button>
+        <div class="result-box" id="split-res">Har Kisi Ka Hissa: ₹0</div>
+    </div>
+
+    <!-- 7. PASSWORD GENERATOR -->
+    <div id="pwd" class="tool-screen">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <h3>Password Generator</h3>
+        <div class="form-group"><label>Password Length:</label><input type="number" id="pwd-len" value="12" min="6" max="25"></div>
+        <button class="btn" onclick="genPassword()">Generate Password</button>
+        <div class="result-box" id="pwd-res">---</div>
+    </div>
+
+    <!-- 8. TIC-TAC-TOE -->
+    <div id="ttt" class="tool-screen">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <h3>Tic-Tac-Toe Game</h3>
+        <div id="ttt-status" style="text-align:center; font-weight:700; margin-bottom:10px; color:var(--primary);">Player X ki baari</div>
+        <div class="ttt-board">
+            <div class="ttt-cell" onclick="playTTT(this,0)"></div><div class="ttt-cell" onclick="playTTT(this,1)"></div><div class="ttt-cell" onclick="playTTT(this,2)"></div>
+            <div class="ttt-cell" onclick="playTTT(this,3)"></div><div class="ttt-cell" onclick="playTTT(this,4)"></div><div class="ttt-cell" onclick="playTTT(this,5)"></div>
+            <div class="ttt-cell" onclick="playTTT(this,6)"></div><div class="ttt-cell" onclick="playTTT(this,7)"></div><div class="ttt-cell" onclick="playTTT(this,8)"></div>
+        </div>
+        <button class="btn" style="background:#64748b;" onclick="resetTTT()">Reset Match</button>
+    </div>
+
+    <!-- 9. SNAKE GAME -->
+    <div id="snake" class="tool-screen">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <h3>Classic Snake Game</h3>
+        <div id="snake-score" style="text-align:center; font-weight:700; margin-bottom:12px;">Score: 0</div>
+        <canvas id="snakeCanvas" width="280" height="280"></canvas>
+        
+        <!-- Mobile Touch Controls D-Pad -->
+        <div class="dpad">
+            <div></div><button class="dbtn" onclick="changeDir(0,-10)">▲</button><div></div>
+            <button class="dbtn" onclick="changeDir(-10,0)">◀</button><button class="dbtn" style="background:#cbd5e1;" onclick="startSnakeGame()">🔄</button><button class="dbtn" onclick="changeDir(10,0)">▶</button>
+            <div></div><button class="dbtn" onclick="changeDir(0,10)">▼</button><div></div>
+        </div>
+    </div>
+
+    <!-- 10. TYPING TESTER -->
+    <div id="typing" class="tool-screen">
+        <button class="back-btn" onclick="goHome()">← Back</button>
+        <h3>Typing Speed Tester</h3>
+        <div style="background:#f1f5f9; padding:14px; border-radius:10px; font-style:italic; margin-bottom:12px; line-height:1.5;" id="type-quote">Success is not final, failure is not fatal: it is the courage to continue that counts.</div>
+        <textarea id="type-input" rows="3" placeholder="Upar likha text yahan jaldi se type karein..." oninput="checkTyping()"></textarea>
+        <div class="result-box" id="type-res">Speed: 0 WPM</div>
+    </div>
+
+    <script>
+        // --- SCREEN NAVIGATION ---
+        function openTool(toolId) {
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('main-header').style.display = 'none';
+            document.getElementById(toolId).classList.add('active');
+            if(toolId === 'snake') startSnakeGame();
+        }
+        function goHome() {
+            document.querySelectorAll('.tool-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('dashboard').style.display = 'grid';
+            document.getElementById('main-header').style.display = 'block';
+            clearInterval(snakeInterval);
+        }
+
+        // --- MEME MAKER ---
+        function generateMeme() {
+            const canvas = document.getElementById('meme-canvas'); const ctx = canvas.getContext('2d');
+            const file = document.getElementById('meme-file').files[0];
+            if(!file) return alert("Photo choose karein!");
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, 0, 0, 350, 350);
+                    ctx.font = "24px Impact"; ctx.fillStyle = "white"; ctx.strokeStyle = "black"; ctx.lineWidth = 4; ctx.textAlign = "center";
+                    ctx.fillText(document.getElementById('meme-top').value.toUpperCase(), 175, 35);
+                    ctx.strokeText(document.getElementById('meme-top').value.toUpperCase(), 175, 35);
+                    ctx.fillText(document.getElementById('meme-bottom').value.toUpperCase(), 175, 330);
+                    ctx.strokeText(document.getElementById('meme-bottom').value.toUpperCase(), 175, 330);
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        // --- QR CODE ---
+        function genQR() {
+            const txt = document.getElementById('qr-text').value; if(!txt) return alert("Kuch type karein!");
+            const img = document.getElementById('qr-img');
+            img.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(txt)}`;
+            img.style.display = "inline-block";
+        }
+
+        // --- PIXEL ART ---
+        const grid = document.getElementById('pixel-grid');
+        for(let i=0; i<256; i++) {
+            const p = document.createElement('div'); p.className = 'pixel';
+            p.addEventListener('click', () => { p.style.backgroundColor = document.getElementById('pixel-color').value; });
+            grid.appendChild(p);
+        }
+        function clearPixelGrid() { document.querySelectorAll('.pixel').forEach(p => p.style.backgroundColor = 'white'); }
+
+        // --- EMI CALC ---
+        function calcEMI() {
+            let P = parseFloat(document.getElementById('emi-amt').value);
+            let r = parseFloat(document.getElementById('emi-rate').value) / 12 / 100;
+            let n = parseInt(document.getElementById('emi-months').value);
+            let emi = (P * r * Math.pow(1+r, n)) / (Math.pow(1+r, n) - 1);
+            document.getElementById('emi-res').innerText = `Monthly EMI: ₹${isNaN(emi)?0:emi.toFixed(2)}`;
+        }
+
+        // --- BILL SPLIT ---
+        function splitBill() {
+            let total = parseFloat(document.getElementById('bill-total').value);
+            let people = parseInt(document.getElementById('bill-people').value);
+            if(total > 0 && people > 0) document.getElementById('split-res').innerText = `Har Kisi Ka Hissa: ₹${(total/people).toFixed(2)}`;
+        }
+
+        // --- PASSWORD GEN ---
+        function genPassword() {
+            let len = document.getElementById('pwd-len').value;
+            let chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+            let pass = "";
+            for(let i=0; i<len; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
+            document.getElementById('pwd-res').innerText = pass;
+        }
+
+        // --- TIC TAC TOE ---
+        let tttState = ["","","","","","","","",""], tttPlayer = "X", tttActive = true;
+        function playTTT(cell, idx) {
+            if(tttState[idx] !== "" || !tttActive) return;
+            tttState[idx] = tttPlayer; cell.innerText = tttPlayer;
+            if(["012","345","678","036","147","258","048","246"].some(p => tttState[p[0]] && tttState[p[0]]===tttState[p[1]] && tttState[p[0]]===tttState[p[2]])) {
+                document.getElementById('ttt-status').innerText = `🎉 Player ${tttPlayer} Jeet Gaya!`; tttActive = false; return;
+            }
+            if(!tttState.includes("")) { document.getElementById('ttt-status').innerText = `🤝 Tie Match!`; return; }
+            tttPlayer = tttPlayer === "X" ? "O" : "X"; document.getElementById('ttt-status').innerText = `Player ${tttPlayer} ki baari`;
+        }
+        function resetTTT() {
+            tttState = ["","","","","","","","",""]; tttPlayer = "X"; tttActive = true;
+            document.getElementById('ttt-status').innerText = "Player X ki baari";
+            document.querySelectorAll('.ttt-cell').forEach(c => c.innerText = "");
+        }
+
+        // --- SNAKE GAME WITH MOBILE DPAD ---
+        const sCanvas = document.getElementById('snakeCanvas'); const sCtx = sCanvas.getContext('2d');
+        let snake, food, dx, dy, score, snakeInterval;
+        function startSnakeGame() {
+            clearInterval(snakeInterval); snake = [{x:140, y:140}]; food = {x:60, y:60}; dx = 10; dy = 0; score = 0;
+            document.getElementById('snake-score').innerText = "Score: " + score;
+            snakeInterval = setInterval(updateSnake, 120);
+        }
+        function changeDir(newDx, newDy) {
+            if((newDx === -10 && dx === 10) || (newDx === 10 && dx === -10)) return;
+            if((newDy === -10 && dy === 10) || (newDy === 10 && dy === -10)) return;
+            dx = newDx; dy = newDy;
+        }
+        document.addEventListener('keydown', e => {
+            if(e.key==='ArrowUp') changeDir(0,-10); if(e.key==='ArrowDown') changeDir(0,10);
+            if(e.key==='ArrowLeft') changeDir(-10,0); if(e.key==='ArrowRight') changeDir(10,0);
+        });
+        function updateSnake() {
+            let head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            if(head.x<0 || head.x>=280 || head.y<0 || head.y>=280) { clearInterval(snakeInterval); return alert("Game Over! Score: " + score); }
+            snake.unshift(head);
+            if(head.x === food.x && head.y === food.y) {
+                score += 10; document.getElementById('snake-score').innerText = "Score: " + score;
+                food = {x: Math.floor(Math.random()*28)*10, y: Math.floor(Math.random()*28)*10};
+            } else { snake.pop(); }
+            sCtx.clearRect(0,0,280,280); sCtx.fillStyle='#ef4444'; sCtx.fillRect(food.x, food.y, 10, 10);
+            sCtx.fillStyle='#22c55e'; snake.forEach(p => sCtx.fillRect(p.x, p.y, 9, 9));
+        }
+
+        // --- TYPING TEST ---
+        let tStart;
+        function checkTyping() {
+            let input = document.getElementById('type-input').value;
+            let target = document.getElementById('type-quote').innerText;
+            if(input.length === 1) tStart = new Date();
+            if(input === target) {
+                let timeMinutes = (new Date() - tStart) / 1000 / 60;
+                let wpm = Math.round((input.length / 5) / timeMinutes);
+                document.getElementById('type-res').innerText = `Speed: ${wpm} WPM! 🔥`;
+            }
+        }
+    </script>
+</body>
+</html>
