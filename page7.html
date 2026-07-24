@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protected PDF to JPG Converter</title>
+  
+  <!-- PDF.js & JSZip Libraries CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f4f6f9;
+      color: #333;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: #1e293b;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    p.subtitle {
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    input[type="file"], input[type="password"], select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: #3b82f6;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+
+    button:hover { background: #1d4ed8; }
+    button:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    #status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .status-info { background: #e0f2fe; color: #0369a1; }
+    .status-error { background: #fee2e2; color: #b91c1c; }
+    .status-success { background: #dcfce7; color: #15803d; }
+
+    /* Action bar for ZIP download */
+    .action-bar {
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .zip-btn {
+      width: auto;
+      background: #059669;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      margin-top: 0;
+    }
+
+    .zip-btn:hover { background: #047857; }
+
+    /* Output Images Preview Grid */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .img-card {
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+
+    .img-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .img-card p {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin: 8px 0;
+    }
+
+    .img-card a {
+      display: inline-block;
+      padding: 6px 12px;
+      background: #3b82f6;
+      color: white;
+      text-decoration: none;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .img-card a:hover { background: #2563eb; }
+
+    canvas { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="card">
+      <h1>🔒 Protected PDF to JPG Converter</h1>
+      <p class="subtitle">Password protected PDF file ko JPG images me convert karo (100% Private & Secure)</p>
+
+      <div class="form-group">
+        <label>1. Choose PDF File</label>
+        <input type="file" id="pdfFile" accept="application/pdf">
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>2. PDF Password (Agar Protected Hai)</label>
+          <input type="password" id="pdfPassword" placeholder="Enter password here">
+        </div>
+
+        <div class="form-group">
+          <label>3. Image Quality / Resolution</label>
+          <select id="qualitySelect">
+            <option value="1.5">Medium (Fast)</option>
+            <option value="2.0" selected>High Quality (Recommended)</option>
+            <option value="3.0">Ultra HD (Large Size)</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="convertBtn" onclick="convertPdfToJpg()">Convert to JPG</button>
+      <div id="status"></div>
+    </div>
+
+    <!-- Download All Section -->
+    <div class="action-bar" id="actionBar">
+      <span id="pageCountText" style="font-weight: 600; color: #334155;"></span>
+      <button class="zip-btn" onclick="downloadAllZip()">📦 Download All as ZIP</button>
+    </div>
+
+    <!-- Preview Container -->
+    <div class="preview-grid" id="previewGrid"></div>
+  </div>
+
+  <!-- Hidden Canvas for Rendering -->
+  <canvas id="renderCanvas"></canvas>
+
+  <script>
+    // PDF.js Worker setup
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    let generatedImages = [];
+
+    function showStatus(msg, type) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.className = `status-${type}`;
+      statusDiv.innerText = msg;
+      statusDiv.style.display = 'block';
+    }
+
+    async function convertPdfToJpg() {
+      const fileInput = document.getElementById('pdfFile');
+      const passwordInput = document.getElementById('pdfPassword').value;
+      const scale = parseFloat(document.getElementById('qualitySelect').value);
+      const convertBtn = document.getElementById('convertBtn');
+      const previewGrid = document.getElementById('previewGrid');
+      const actionBar = document.getElementById('actionBar');
+
+      if (!fileInput.files.length) {
+        showStatus('Kripya pehle ek PDF file select karein!', 'error');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const arrayBuffer = await file.arrayBuffer();
+
+      // Reset previous state
+      previewGrid.innerHTML = '';
+      actionBar.style.display = 'none';
+      generatedImages = [];
+      convertBtn.disabled = true;
+      showStatus('PDF load ho raha hai...', 'info');
+
+      try {
+        // Load PDF with Password support
+        const loadingTask = pdfjsLib.getDocument({
+          data: arrayBuffer,
+          password: passwordInput
+        });
+
+        const pdf = await loadingTask.promise;
+        const totalPages = pdf.numPages;
+
+        showStatus(`Processing... Total ${totalPages} pages mile. Converting to JPG...`, 'info');
+
+        const canvas = document.getElementById('renderCanvas');
+        const ctx = canvas.getContext('2d');
+
+        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+          showStatus(`Converting Page ${pageNum} of ${totalPages}...`, 'info');
+
+          const page = await pdf.getPage(pageNum);
+          const viewport = page.getViewport({ scale: scale });
+
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          await page.render({
+            canvasContext: ctx,
+            viewport: viewport
+          }).promise;
+
+          // Convert canvas to JPG
+          const imgDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+          generatedImages.push({ pageNum, dataUrl: imgDataUrl });
+
+          // Append to Grid
+          appendImageCard(pageNum, imgDataUrl);
+        }
+
+        showStatus(`Success! Sabhi ${totalPages} pages JPG me convert ho gaye hain.`, 'success');
+        document.getElementById('pageCountText').innerText = `Total Pages: ${totalPages}`;
+        actionBar.style.display = 'flex';
+
+      } catch (error) {
+        if (error.name === 'PasswordException') {
+          showStatus('❌ Galat password! Kripya sahi PDF password enter karein.', 'error');
+        } else {
+          showStatus('❌ Error: ' + error.message, 'error');
+        }
+      } finally {
+        convertBtn.disabled = false;
+      }
+    }
+
+    function appendImageCard(pageNum, dataUrl) {
+      const previewGrid = document.getElementById('previewGrid');
+
+      const card = document.createElement('div');
+      card.className = 'img-card';
+
+      const img = document.createElement('img');
+      img.src = dataUrl;
+
+      const p = document.createElement('p');
+      p.innerText = `Page ${pageNum}`;
+
+      const btn = document.createElement('a');
+      btn.href = dataUrl;
+      btn.download = `page_${pageNum}.jpg`;
+      btn.innerText = 'Download JPG';
+
+      card.appendChild(img);
+      card.appendChild(p);
+      card.appendChild(btn);
+
+      previewGrid.appendChild(card);
+    }
+
+    // ZIP Download Functionality
+    async function downloadAllZip() {
+      if (!generatedImages.length) return;
+
+      const zip = new JSZip();
+      const imgFolder = zip.folder("pdf_images");
+
+      generatedImages.forEach(img => {
+        // Remove Base64 Header
+        const base64Data = img.dataUrl.replace(/^data:image\/jpeg;base64,/, "");
+        imgFolder.file(`page_${img.pageNum}.jpg`, base64Data, { base64: true });
+      });
+
+      const content = await zip.generateAsync({ type: "blob" });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(content);
+      a.download = "converted_pages.zip";
+      a.click();
+    }
+  </script>
+</body>
+</html>
