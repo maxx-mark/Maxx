@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Anime Live Chat</title>
+    <style>
+        /* Dark Theme (Default) */
+        :root {
+            --bg-color: #0b0f19;
+            --container-bg: #111827;
+            --header-bg: #0f172a;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: #1f2937;
+            --card-bg: #1f2937;
+            --card-hover: #374151;
+            --sent-msg: #0284c7;
+            --received-msg: #1f2937;
+            --input-bg: #0f172a;
+        }
+
+        /* Light Theme */
+        body.light-theme {
+            --bg-color: #e2e8f0;
+            --container-bg: #ffffff;
+            --header-bg: #f8fafc;
+            --text-color: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --card-bg: #ffffff;
+            --card-hover: #f1f5f9;
+            --sent-msg: #0284c7;
+            --received-msg: #f1f5f9;
+            --input-bg: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .app-container {
+            width: 100%;
+            height: 100%;
+            background: var(--container-bg);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        @media (min-width: 480px) {
+            .app-container {
+                max-width: 420px;
+                height: 90vh;
+                border-radius: 24px;
+                border: 2px solid var(--border-color);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            }
+        }
+
+        /* Screen 1 */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--container-bg);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .screen.hidden {
+            display: none;
+        }
+
+        .screen-header {
+            padding: 15px 20px;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .screen-header h2 {
+            font-size: 18px;
+            color: #0284c7;
+        }
+
+        .theme-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .character-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .char-card {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            cursor: pointer;
+            gap: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--header-bg);
+            border: 2px solid #0284c7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+
+        .card-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .card-anime {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Screen 2 */
+        .chat-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 5;
+        }
+
+        .chat-nav-header {
+            padding: 12px 15px;
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-nav-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--container-bg);
+            border: 2px solid #0284c7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+        }
+
+        .chat-nav-details h3 {
+            font-size: 16px;
+        }
+
+        .chat-nav-details span {
+            font-size: 12px;
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .messages-area {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background: var(--sent-msg);
+            color: #fff;
+            border-bottom-right-radius: 2px;
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background: var(--received-msg);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 2px;
+        }
+
+        .sender-name {
+            font-size: 12px;
+            font-weight: bold;
+            color: #0284c7;
+            margin-bottom: 4px;
+        }
+
+        .chat-input-box {
+            padding: 12px 15px;
+            background: var(--container-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-box input {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px 15px;
+            border-radius: 25px;
+            color: var(--text-color);
+            outline: none;
+            font-size: 15px;
+        }
+
+        .chat-input-box button {
+            background: #0284c7;
+            border: none;
+            color: #fff;
+            padding: 0 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- SCREEN 1: Choose Character -->
+        <div class="screen" id="selection-screen">
+            <div class="screen-header">
+                <h2>🎭 Choose Character</h2>
+                <button class="theme-btn" onclick="toggleTheme()">☀️ / 🌙</button>
+            </div>
+            <div class="character-grid" id="character-grid">
+                <!-- Javascript will load characters here -->
+            </div>
+        </div>
+
+        <!-- SCREEN 2: Chat Room -->
+        <div class="chat-screen" id="chat-screen">
+            <div class="chat-nav-header">
+                <div class="chat-user-info">
+                    <div class="chat-nav-avatar" id="my-avatar">🐉</div>
+                    <div class="chat-nav-details">
+                        <h3 id="my-name">Goku</h3>
+                        <span>🟢 Global Chat</span>
+                    </div>
+                </div>
+                <button class="theme-btn" onclick="toggleTheme()">☀️ / 🌙</button>
+            </div>
+
+            <div class="messages-area" id="messages-area"></div>
+
+            <div class="chat-input-box">
+                <input type="text" id="user-input" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Older standard version that runs everywhere without module errors) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // --- 1. UI AND CHARACTERS LOGIC (Runs instantly) ---
+        const characters = [
+            { name: "Goku", anime: "Dragon Ball Z", icon: "🐉" },
+            { name: "Naruto Uzumaki", anime: "Naruto", icon: "🍥" },
+            { name: "Satoru Gojo", anime: "Jujutsu Kaisen", icon: "👁️" },
+            { name: "Monkey D. Luffy", anime: "One Piece", icon: "👒" },
+            { name: "Levi Ackerman", anime: "Attack on Titan", icon: "⚔️" },
+            { name: "Saitama", anime: "One Punch Man", icon: "👨‍🦲" },
+            { name: "Light Yagami", anime: "Death Note", icon: "📓" },
+            { name: "Tanjiro Kamado", anime: "Demon Slayer", icon: "🎴" },
+            { name: "Kakashi Hatake", anime: "Naruto", icon: "⚡" },
+            { name: "Eren Yeager", anime: "Attack on Titan", icon: "🕊️" }
+        ];
+
+        let selectedUser = null;
+        let dbRef = null;
+        const myUniqueId = 'user_' + Math.floor(Math.random() * 1000000);
+
+        // Theme Toggle Function
+        function toggleTheme() {
+            document.body.classList.toggle("light-theme");
+        }
+
+        // Show characters on screen
+        function loadCharacters() {
+            const grid = document.getElementById("character-grid");
+            grid.innerHTML = ""; // Clear existing
+
+            for (let i = 0; i < characters.length; i++) {
+                let char = characters[i];
+                let card = document.createElement("div");
+                card.className = "char-card";
+                
+                // Add click event directly
+                card.onclick = function() {
+                    selectCharacter(char);
+                };
+
+                card.innerHTML = `
+                    <div class="card-avatar">${char.icon}</div>
+                    <div>
+                        <div class="card-name">${char.name}</div>
+                        <div class="card-anime">${char.anime}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            }
+        }
+
+        // Go to chat screen
+        function selectCharacter(char) {
+            selectedUser = char;
+            document.getElementById("my-avatar").innerText = char.icon;
+            document.getElementById("my-name").innerText = char.name;
+            document.getElementById("selection-screen").classList.add("hidden");
+        }
+
+        // Send a message
+        function sendMessage() {
+            const input = document.getElementById("user-input");
+            const text = input.value.trim();
+
+            if (text !== "" && selectedUser) {
+                if (dbRef) {
+                    // Save to Firebase if connected
+                    dbRef.push({
+                        senderId: myUniqueId,
+                        name: selectedUser.name + " " + selectedUser.icon,
+                        text: text
+                    });
+                } else {
+                    // Offline testing mode
+                    printMessage({ senderId: myUniqueId, name: selectedUser.name, text: text });
+                }
+                input.value = "";
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Print message to screen
+        function printMessage(data) {
+            const container = document.getElementById("messages-area");
+            const msgDiv = document.createElement("div");
+
+            if (data.senderId === myUniqueId) {
+                msgDiv.className = "message sent";
+                msgDiv.innerText = data.text;
+            } else {
+                msgDiv.className = "message received";
+                msgDiv.innerHTML = `<div class="sender-name">${data.name}</div><div>${data.text}</div>`;
+            }
+
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Run instantly to show UI
+        loadCharacters();
+
+        // --- 2. FIREBASE CONNECTION ---
+        try {
+            // Your Firebase keys go here
+            const firebaseConfig = {
+                apiKey: "YOUR_API_KEY",
+                authDomain: "YOUR_AUTH_DOMAIN",
+                databaseURL: "YOUR_DATABASE_URL",
+                projectId: "YOUR_PROJECT_ID",
+                storageBucket: "YOUR_STORAGE_BUCKET",
+                messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+                appId: "YOUR_APP_ID"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
+            dbRef = database.ref('anime-chat-room');
+
+            // Listen for messages
+            dbRef.on('child_added', function(snapshot) {
+                printMessage(snapshot.val());
+            });
+        } catch (e) {
+            console.log("Running offline mode without Firebase.");
+        }
+    </script>
+</body>
+</html>
